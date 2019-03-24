@@ -13,6 +13,7 @@ setup(
     description='',
     install_requires=[
         'spotipy',
-        'tqdm'
+        'tqdm',
+        'numpy'
     ]
 )
