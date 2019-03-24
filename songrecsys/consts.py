@@ -1,0 +1,1 @@
+CONFIG_DEFAULT_PATH = './config.json'
