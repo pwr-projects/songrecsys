@@ -2,11 +2,11 @@ from typing import Text
 
 
 class ConfigBase:
-    def __init__(self, 
-    client_id: Text,
-                 client_secret: Text):
-        self.client_id = client_id
-        self.client_secret = client_secret
+    def __init__(self,
+                 spotify_id: Text,
+                 spotify_secret: Text):
+        self.client_id = spotify_id
+        self.client_secret = spotify_secret
 
     @property
     def base_dict(self):
