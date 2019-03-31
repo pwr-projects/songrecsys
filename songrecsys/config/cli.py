@@ -6,8 +6,8 @@ from .base import ConfigBase
 class ConfigCLI(ConfigBase):
     def __init__(self, *args, **kwargs):
         parser = ArgumentParser(description='Song recommendation system')
-        parser.add_argument('--user_id',  type=str, help='Spotify app client')
-        parser.add_argument('--user_secret', type=str, help='Spotify app secret')
+        parser.add_argument('--spotify_id',  type=str, help='Spotify app client')
+        parser.add_argument('--spotify_secret', type=str, help='Spotify app secret')
 
         args = parser.parse_args()
         super().__init__(*args.__dict__.values())
