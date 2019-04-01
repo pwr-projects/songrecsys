@@ -5,8 +5,8 @@ class ConfigBase:
     def __init__(self,
                  spotify_id: Text,
                  spotify_secret: Text):
-        self.client_id = spotify_id
-        self.client_secret = spotify_secret
+        self.spotify_id = spotify_id
+        self.spotify_secret = spotify_secret
 
     @property
     def base_dict(self):

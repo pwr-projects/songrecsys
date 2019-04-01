@@ -2,7 +2,7 @@ import json
 import sys
 from typing import Text
 
-from ..consts import CONFIG_DEFAULT_PATH
+from ..consts import DEFAULT_PATH_CONFIG
 from .base import ConfigBase
 from .cli import ConfigCLI
 from .interactive import ConfigInteractive
@@ -11,7 +11,7 @@ from .saved_json import ConfigJSON
 
 class ConfigMgr:
 
-    def __init__(self, config_path: Text = CONFIG_DEFAULT_PATH, *args, **kwargs):
+    def __init__(self, config_path: Text = DEFAULT_PATH_CONFIG, *args, **kwargs):
         self._config_path = config_path
         self.config = self.load()
         self.dump()
