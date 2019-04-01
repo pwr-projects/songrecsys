@@ -1,3 +1,3 @@
-from .consts import CONFIG_DEFAULT_PATH
+from .consts import *
 from .config import *
-from .spotify_wrapper import *
+from .spotify import *

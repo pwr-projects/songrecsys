@@ -1,35 +1,28 @@
-from typing import Sequence, Text, Dict
-
-import spotipy.util as util
-from spotipy import Spotify
-from spotipy.oauth2 import SpotifyClientCredentials
-from spotipy.util import prompt_for_user_token
-from tqdm import tqdm
+from typing import Dict, Sequence, Text
 
 import numpy as np
+from spotipy import Spotify
+from tqdm import tqdm
 
-from .config import ConfigBase
+from songrecsys.consts import DEFAULT_PATH_PLAYLISTS
+from songrecsys.utils import save_to_json
 
 
-class SpotifyWrapper(Spotify):
-    def __init__(self, config: ConfigBase, username: Text, *args, **kwargs):
-        auth = SpotifyClientCredentials(client_id=config.config.client_id,
-                                        client_secret=config.config.client_secret)
-        super().__init__(client_credentials_manager=auth,
-                         *args, **kwargs)
+class PlaylistMgr:
 
-        self._username = username
+    def __init__(self, spotify_api):
+        self._spotify_api = spotify_api
 
     def get_all_playlists_of_user(self, max_count: int = np.inf) -> Sequence[Text]:
         playlist_ids = []
-        playlists = self.user_playlists(self._username, limit=min(50, max_count))
+        playlists = self._spotify_api.user_playlists(self._spotify_api.username, limit=min(50, max_count))
 
-        print(f'Getting playlists of user: {self._username}...')
+        print(f'Getting playlists of user: {self._spotify_api.username}...')
 
         while playlists and len(playlist_ids) < max_count:
             ids = map(lambda playlist: playlist['id'], playlists['items'])
             playlist_ids.extend(list(ids))
-            playlists = self.next(playlists) if playlists['next'] else None
+            playlists = self._spotify_api.next(playlists) if playlists['next'] else None
             print(f'{len(playlist_ids)} playlists', flush=True, end='\r')
         print()
 
@@ -43,18 +36,23 @@ class SpotifyWrapper(Spotify):
 
         return all_playlists_info
 
+    def get_all_playlists_and_tracks(self, where_to_save: Text = DEFAULT_PATH_PLAYLISTS) -> Dict[Text, Sequence]:
+        playlist_ids = self.get_all_playlists_of_user()
+        songs = self.get_tracks_from_playlists(*playlist_ids)
+        return save_to_json(songs, where_to_save)
+
     def _extract_tracks_info_from_playlist(self, playlist_id: Text) -> Sequence:
         parse_track_info = lambda tracks: list(map(self._extract_specific_info_from_track_item, tracks['items']))
 
-        results = self.user_playlist(self._username,
-                                     playlist_id,
-                                     fields='tracks,next')
+        results = self._spotify_api.user_playlist(self._spotify_api.username,
+                                                  playlist_id,
+                                                  fields='tracks,next')
 
         tracks = results['tracks']
         all_tracks_info = parse_track_info(tracks)
 
         while tracks['next']:
-            tracks = self.next(tracks)
+            tracks = self._spotify_api.next(tracks)
             tracks_info = parse_track_info(tracks)
             all_tracks_info.extend(list(tracks_info))
 
@@ -73,7 +71,3 @@ class SpotifyWrapper(Spotify):
         return {'id': song_id,
                 'title': title,
                 'artists': artists}
-
-# permitions for user data
-# ['user-read-private', 'user-read-birthdate', 'user-read-email', 'playlist-read-private', 'user-library-read', 'user-library-modify', 'user-top-read', 'playlist-read-collaborative', 'playlist-modify-public',
-#     'playlist-modify-private', 'user-follow-read', 'user-follow-modify', 'user-read-currently-playing', 'user-modify-playback-state', 'user-read-recently-played', 'user-read-playback-state']
