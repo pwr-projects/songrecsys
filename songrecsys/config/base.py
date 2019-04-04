@@ -1,13 +1,10 @@
-from typing import Text
+from typing import Dict, Text
 
 
 class ConfigBase:
-    def __init__(self,
-                 spotify_id: Text,
-                 spotify_secret: Text):
-        self.spotify_id = spotify_id
-        self.spotify_secret = spotify_secret
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
 
     @property
-    def base_dict(self):
+    def base_dict(self) -> Dict:
         return self.__dict__

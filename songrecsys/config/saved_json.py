@@ -10,12 +10,12 @@ class ConfigJSON(ConfigBase):
         super().__init__(**self.load(path))
 
     @property
-    def base_dict(self):
+    def base_dict(self) -> Dict:
         return super().base_dict
 
     @classmethod
     def load(cls, path: Text) -> Dict:
-        with open(path, 'r') as fhd:
+        with open(path, "r") as fhd:
             return json.load(fhd)
 
     @classmethod

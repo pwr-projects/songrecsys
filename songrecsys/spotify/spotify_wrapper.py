@@ -22,10 +22,11 @@ class SpotifyWrapper(Spotify):
             username {Text} -- name of user used for scraper
         """
 
-        auth = SpotifyClientCredentials(client_id=config.config.spotify_id,
-                                        client_secret=config.config.spotify_secret)
-        super().__init__(client_credentials_manager=auth,
-                         *args, **kwargs)
+        auth = SpotifyClientCredentials(
+            client_id=config.spotify_id,
+            client_secret=config.spotify_secret,
+        )
+        super().__init__(client_credentials_manager=auth, *args, **kwargs)
 
         self._username = username
         self._playlist_mgr = PlaylistMgr(self)
