@@ -1,3 +1,5 @@
 numpy
 spotipy
 tqdm
+pymagnitude
+lyricsgenius
