@@ -2,6 +2,7 @@ from .consts import *
 from .config import *
 from .spotify import *
 from .lyrics import *
+from .utils import *
 
 import os
 if not os.path.exists(DEFAULT_PATH_TMP_DIR):
