@@ -1,4 +1,5 @@
 import os
+from pprint import pprint
 from typing import Dict, Sequence, Text
 
 import numpy as np
@@ -6,45 +7,45 @@ from spotipy import Spotify
 from tqdm import tqdm
 
 from songrecsys.consts import DEFAULT_PATH_PLAYLISTS
+from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
 from songrecsys.utils import load_from_json, save_to_json
 
 
 class PlaylistMgr:
-    def __init__(self, spotify_api):
-        self._spotify_api = spotify_api
+    def __init__(self, spotify_api: SpotifyWrapper):
+        self._api = spotify_api
 
     def get_all_playlists_of_user(self, max_count: int = np.inf) -> Sequence[Text]:
-        playlist_ids = []
-        playlists = self._spotify_api.user_playlists(self._spotify_api.username, limit=min(50, max_count))
+        playlist_info = []
+        pl_infos = self._api.user_playlists(self._api.username, limit=min(50, max_count))
 
-        print(f"Getting playlists of user: {self._spotify_api.username}...")
+        print(f"Getting playlists of user: {self._api.username}...")
 
-        while playlists and len(playlist_ids) < max_count:
-            ids = map(lambda playlist: playlist["id"], playlists["items"])
-            playlist_ids.extend(list(ids))
-            playlists = self._spotify_api.next(playlists) if playlists["next"] else None
-            print(f"{len(playlist_ids)} playlists", flush=True, end="\r")
+        while pl_infos and len(playlist_info) < max_count:
+            playlist_info.extend([{ "id": pl_info["id"], "name": pl_info["name"]} for pl_info in pl_infos["items"]])
+            pl_infos = self._api.next(pl_infos) if pl_infos["next"] else None
+            print(f"{len(playlist_info)} playlists", flush=True, end="\r")
         print()
 
-        return playlist_ids
+        return playlist_info
 
-    def get_tracks_from_playlists(self, *playlist_ids: Sequence[Text]) -> Sequence[Dict]:
-        all_playlists_info = {}
+    def get_tracks_from_playlists(self, *playlist_infos: Sequence[Dict]) -> Sequence[Dict]:
 
-        for playlist_id in tqdm(playlist_ids, "Getting songs from playlists", leave=False):
-            all_playlists_info[playlist_id] = self._extract_tracks_info_from_playlist(playlist_id)
+        for pl_info in tqdm(playlist_infos, "Getting songs from playlists", leave=False):
+            pl_info["tracks"] = self._extract_tracks_info_from_playlist(pl_info["id"])
 
-        return all_playlists_info
+        return playlist_infos
 
     def get_all_playlists_and_tracks(self,
                                      save: bool = True,
                                      where_to_save: Text = DEFAULT_PATH_PLAYLISTS,
-                                     load_saved: bool = True) -> Dict[Text, Sequence]:
+                                     load_saved: bool = True,
+                                     max_playlist_count: int = np.inf) -> Dict[Text, Sequence]:
         if load_saved and os.path.exists(where_to_save):
             return load_from_json(where_to_save)
 
-        playlist_ids = self.get_all_playlists_of_user()
-        songs = self.get_tracks_from_playlists(*playlist_ids)
+        pl_infos = self.get_all_playlists_of_user(max_playlist_count)
+        songs = self.get_tracks_from_playlists(*pl_infos)
         return save_to_json(songs, where_to_save) if save else songs
 
     def _extract_tracks_info_from_playlist(self, playlist_id: Text) -> Sequence:
@@ -52,13 +53,13 @@ class PlaylistMgr:
             return list(map(self._extract_specific_info_from_track_item,
                             tracks["items"]))
 
-        results = self._spotify_api.user_playlist(self._spotify_api.username, playlist_id, fields="tracks,next")
+        results = self._api.user_playlist(self._api.username, playlist_id, fields="tracks,next")
 
         tracks = results["tracks"]
         all_tracks_info = parse_track_info(tracks)
 
         while tracks["next"]:
-            tracks = self._spotify_api.next(tracks)
+            tracks = self._api.next(tracks)
             tracks_info = parse_track_info(tracks)
             all_tracks_info.extend(list(tracks_info))
 
@@ -75,3 +76,12 @@ class PlaylistMgr:
         title = track_info["name"]
 
         return {"id": song_id, "title": title, "artists": artists}
+
+
+    def summary(self, playlists):
+        all_tracks = 0
+        for pl_info in playlists:
+            tracks_no = len(pl_info["tracks"])
+            all_tracks += tracks_no
+            print(f'\t{pl_info["name"]} - {tracks_no} tracks')
+        print(f'Downloaded {len(playlists)} playlists. Overall: {all_tracks} tracks.')
