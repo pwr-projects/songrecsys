@@ -30,5 +30,5 @@ class ConfigMgr:
         return ConfigInteractive()
 
     def dump(self) -> NoReturn:
-        with open(self._config_path, "w") as fhd:
+        with open(self._config_path, 'w') as fhd:
             json.dump(self._config.base_dict, fhd, indent=4)
