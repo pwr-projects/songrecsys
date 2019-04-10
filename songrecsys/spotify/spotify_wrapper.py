@@ -12,13 +12,13 @@ from songrecsys.config import ConfigBase
 
 class SpotifyWrapper(Spotify):
     def __init__(self, config: ConfigBase, username: Text, *args, **kwargs):
-        """Spotipy wrapper allowing to perform operations on playlists and so on
+        '''Spotipy wrapper allowing to perform operations on playlists and so on
 
         Arguments:
             Spotify {class} -- Spotify API by spotipy
-            config {ConfigBase} -- Config schema    
+            config {ConfigBase} -- Config schema
             username {Text} -- name of user used for scraper
-        """
+        '''
 
         auth = SpotifyClientCredentials(
             client_id=config.spotify_id,

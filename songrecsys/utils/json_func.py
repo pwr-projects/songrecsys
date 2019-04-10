@@ -6,16 +6,16 @@ from typing import Text
 def save_to_json(obj: object, where: Text) -> object:
     override = True
     if exists(where):
-        answer = input(f"{where} exists. Override? [Yy/Nn] ")
-        override = answer in "YyTt"
+        answer = input(f'{where} exists. Override? [Yy/Nn] ')
+        override = answer in 'YyTt'
 
     if override:
-        with open(where, "w") as fhd:
+        with open(where, 'w') as fhd:
             json.dump(obj, fhd, indent=4)
 
     return obj
 
 
 def load_from_json(where: Text) -> object:
-    with open(where, "r") as fhd:
+    with open(where, 'r') as fhd:
         return json.load(fhd)

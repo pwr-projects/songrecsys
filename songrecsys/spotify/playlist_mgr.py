@@ -19,20 +19,20 @@ class PlaylistMgr:
         playlist_info = []
         pl_infos = self._api.user_playlists(self._api.username, limit=min(50, max_count))
 
-        print(f"Getting playlists of user: {self._api.username}...")
+        print(f'Getting playlists of user: {self._api.username}...')
 
         while pl_infos and len(playlist_info) < max_count:
-            playlist_info.extend([{ "id": pl_info["id"], "name": pl_info["name"]} for pl_info in pl_infos["items"]])
-            pl_infos = self._api.next(pl_infos) if pl_infos["next"] else None
-            print(f"{len(playlist_info)} playlists", flush=True, end="\r")
+            playlist_info.extend([{'id': pl_info['id'], 'name': pl_info['name']} for pl_info in pl_infos['items']])
+            pl_infos = self._api.next(pl_infos) if pl_infos['next'] else None
+            print(f'{len(playlist_info)} playlists', flush=True, end='\r')
         print()
 
         return playlist_info
 
     def get_tracks_from_playlists(self, *playlist_infos: Sequence[Dict]) -> Sequence[Dict]:
 
-        for pl_info in tqdm(playlist_infos, "Getting songs from playlists", leave=False):
-            pl_info["tracks"] = self._extract_tracks_info_from_playlist(pl_info["id"])
+        for pl_info in tqdm(playlist_infos, 'Getting songs from playlists', leave=False):
+            pl_info['tracks'] = self._extract_tracks_info_from_playlist(pl_info['id'])
 
         return playlist_infos
 
@@ -51,14 +51,14 @@ class PlaylistMgr:
     def _extract_tracks_info_from_playlist(self, playlist_id: Text) -> Sequence:
         def parse_track_info(tracks):
             return list(map(self._extract_specific_info_from_track_item,
-                            tracks["items"]))
+                            tracks['items']))
 
-        results = self._api.user_playlist(self._api.username, playlist_id, fields="tracks,next")
+        results = self._api.user_playlist(self._api.username, playlist_id, fields='tracks,next')
 
-        tracks = results["tracks"]
+        tracks = results['tracks']
         all_tracks_info = parse_track_info(tracks)
 
-        while tracks["next"]:
+        while tracks['next']:
             tracks = self._api.next(tracks)
             tracks_info = parse_track_info(tracks)
             all_tracks_info.extend(list(tracks_info))
@@ -66,22 +66,22 @@ class PlaylistMgr:
         return all_tracks_info
 
     def _extract_specific_info_from_track_item(self, track_item: Dict) -> Dict:
-        track_info = track_item.get("track")
+        track_info = track_item.get('track')
 
         if not track_info:
             return None
 
-        song_id = track_info["id"]
-        artists = list(map(lambda artist_info: artist_info["name"], track_info["artists"]))
-        title = track_info["name"]
+        song_id = track_info['id']
+        artists = list(map(lambda artist_info: artist_info['name'], track_info['artists']))
+        title = track_info['name']
 
-        return {"id": song_id, "title": title, "artists": artists}
-
+        return {'id': song_id, 'title': title, 'artists': artists}
 
     def summary(self, playlists):
         all_tracks = 0
         for pl_info in playlists:
-            tracks_no = len(pl_info["tracks"])
+            pl_name = pl_info['name']
+            tracks_no = len(pl_info['tracks'])
             all_tracks += tracks_no
-            print(f'\t{pl_info["name"]} - {tracks_no} tracks')
+            print(f'\t{pl_name} - {tracks_no} tracks')
         print(f'Downloaded {len(playlists)} playlists. Overall: {all_tracks} tracks.')

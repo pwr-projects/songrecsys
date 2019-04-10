@@ -15,7 +15,7 @@ class ConfigJSON(ConfigBase):
 
     @classmethod
     def load(cls, path: Text) -> Dict:
-        with open(path, "r") as fhd:
+        with open(path, 'r') as fhd:
             return json.load(fhd)
 
     @classmethod
