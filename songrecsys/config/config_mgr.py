@@ -10,7 +10,10 @@ from .saved_json import ConfigJSON
 
 
 class ConfigMgr:
-    def __init__(self, config_path: Text = DEFAULT_PATH_CONFIG, *args, **kwargs):
+    def __init__(self,
+                 config_path: Text = DEFAULT_PATH_CONFIG,
+                 *args,
+                 **kwargs):
         self._config_path = config_path
         self._config = self.load()
         self._setattrs()

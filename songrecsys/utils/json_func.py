@@ -9,7 +9,9 @@ from songrecsys.schemes.playlist import Playlist
 from songrecsys.schemes.track import Track
 
 
-def save_to_json(obj: object, where: Text, default_override: bool = True) -> object:
+def save_to_json(obj: object,
+                 where: Text,
+                 default_override: bool = True) -> object:
     override = True
     if not default_override and exists(where):
         answer = input(f'{where} exists. Override? [Yy/Nn] ')
@@ -30,7 +32,7 @@ def load_from_json(where: Text) -> object:
 def dump(playlists: Dict[Text, Playlist] = None,
          tracks: Dict[Text, Track] = None,
          merged_data: MergedData = None,
-         verbose:bool=True) -> NoReturn:
+         verbose: bool = True) -> NoReturn:
     if playlists:
         if verbose:
             print(f'Saving playlists to {DEFAULT_PATH_PLAYLISTS}', end='... ')
@@ -55,6 +57,7 @@ def load(playlists: bool = False,
          tracks: bool = False,
          merged_data: bool = False) -> Dict[Text, object]:
     return_value = {}
+    
     if playlists:
         try:
             print(f'Loading playlists from {DEFAULT_PATH_PLAYLISTS}', end='... ')

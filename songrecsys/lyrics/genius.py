@@ -14,7 +14,9 @@ class LyricsGenius(lyricsgenius.Genius):
         super().__init__(config.genius_id)
         self.verbose = config.verbose if hasattr(config, 'verbose') else False
 
-    def lyrics(self, title: Text, artist: Text) -> Text:
+    def lyrics(self,
+               title: Text,
+               artist: Text) -> Text:
         lr = self.search_song(title, artist, False)
         return lr.lyrics if lr else None
 

@@ -6,7 +6,10 @@ from .base import ConfigBase
 
 
 class ConfigJSON(ConfigBase):
-    def __init__(self, path: Text, *args, **kwargs):
+    def __init__(self,
+                 path: Text,
+                 *args,
+                 **kwargs):
         super().__init__(**self.load(path))
 
     @property
