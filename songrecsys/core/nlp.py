@@ -3,7 +3,7 @@ from typing import Text
 
 from pymagnitude import *
 
-from songrecsys.consts import ModelPath
+from songrecsys.schemes import ModelPath
 
 
 class NLP:
