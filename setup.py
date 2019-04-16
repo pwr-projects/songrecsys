@@ -16,7 +16,7 @@ setup(
     packages=find_packages(),
     url='https://github.com/pwr-projects/songsysrec',
     license='',
-    author='Mateusz Gaweł, Grzegorz Suszk'",
+    author='Mateusz Gaweł, Grzegorz Suszk',
     # author_email='',
     description='',
     install_requires=requirements(),
