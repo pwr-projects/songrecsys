@@ -1,5 +1,18 @@
 numpy
 spotipy
 tqdm
-pymagnitude
 lyricsgenius
+#  PYMAGNITUDE
+pymagnitude
+lz4
+xxhash
+annoy
+fasteners
+https://download.pytorch.org/whl/cpu/torch-1.0.1.post2-cp37-cp37m-linux_x86_64.whl
+torchvision
+h5py
+
+# DEV
+pylint
+autopep8
+rope
