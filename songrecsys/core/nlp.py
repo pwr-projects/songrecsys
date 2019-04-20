@@ -11,7 +11,7 @@ class NLP(Magnitude):
     def __init__(self, model_path: ModelPath):
         self._model_path = model_path
 
-        model_local_path = join(dirname(__file__), '..', 'data', 'models', self._model_path)
+        model_local_path = Path(dirname(__file__)) / '..' / 'data' / 'models' / self._model_path
         use_stream = not exists(model_local_path)
 
         if use_stream:

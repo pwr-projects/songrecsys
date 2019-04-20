@@ -8,11 +8,11 @@ from tqdm import tqdm
 
 from songrecsys.consts import (DEFAULT_PATH_MERGED_DATA,
                                DEFAULT_PATH_PLAYLISTS, DEFAULT_PATH_TRACKS)
+from songrecsys.data.manager import dump, load
 from songrecsys.schemes.mergeddata import MergedData
 from songrecsys.schemes.playlist import Playlist
 from songrecsys.schemes.track import Track
 from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
-from songrecsys.utils import dump, load
 
 
 class PlaylistMgr:
@@ -33,8 +33,8 @@ class PlaylistMgr:
             return None
 
         print(f'Downloading playlist of {self._api.username}', end='... ')
-
         api_pls = self._api.user_playlists(self._api.username, limit=min(50, max_count))
+
         while api_pls and len(pls) < max_count:
             pls.extend(filter(None, map(filter_playlist_info, api_pls['items'])))
             api_pls = self._api.next(api_pls) if api_pls['next'] else None
@@ -65,7 +65,7 @@ class PlaylistMgr:
             loaded_data = load(playlists=True, tracks=True, merged_data=True)
 
             if 'playlists' in loaded_data and 'tracks' in loaded_data:
-                loaded_data = self.merge_data(loaded_data['playlists'], loaded_data['tracks'])
+                loaded_data = self.merge_data(loaded_data.get('playlists'), loaded_data.get('tracks'))
             elif 'merged_data' in loaded_data:
                 loaded_data = loaded_data.get('merged_data')
 
@@ -137,13 +137,14 @@ class PlaylistMgr:
         return playlists, tracks
 
     def merge_data(self,
-                   playlists: Dict[Text, Playlist],
-                   tracks: Dict[Text, Track],
+                   playlists: Dict,
+                   tracks: Dict,
                    save: bool = True) -> MergedData:
         merged_data = []
         for playlist_id, playlist in playlists.items():
-            playlist = Playlist(id=playlist_id, **playlist)
-            new_tracks = [Track(id=tr, **tracks[tr]) for tr in playlist.tracks if tr]
+            playlist = Playlist(id=playlist_id, **(playlist if isinstance(playlist, dict) else playlist.__dict__))
+            new_tracks = [Track(id=tr, **(tracks[tr] if isinstance(tracks[tr], dict) else tracks[tr].__dict__))
+                          for tr in playlist.tracks if tr]
             playlist.tracks = new_tracks
             merged_data.append(playlist)
 

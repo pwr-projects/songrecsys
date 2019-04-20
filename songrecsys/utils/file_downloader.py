@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import NoReturn, Text
 
 import requests
@@ -9,7 +10,7 @@ def download_file(url: Text,
                   filename: Text = False,
                   verbose: bool = False) -> NoReturn:
     if not filename:
-        local_filename = os.path.join('.', url.split('/')[-1])
+        local_filename = Path('.') / url.split('/')[-1]
     else:
         local_filename = filename
     r = requests.get(url, stream=True)

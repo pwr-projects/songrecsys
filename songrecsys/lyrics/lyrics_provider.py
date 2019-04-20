@@ -1,22 +1,21 @@
+from abc import ABC, abstractmethod
 from time import sleep
-from typing import Dict, Sequence, Text
+from typing import Dict, Text
 
-import lyricsgenius
+from tqdm.auto import tqdm
 
-from songrecsys.config import ConfigBase
-from songrecsys.lyrics.lyrics_provider import LyricsProvider
+from songrecsys.config.base import ConfigBase
+from songrecsys.schemes.track import Track
+from songrecsys.data import dump, load
 
 
-class LyricsGenius(lyricsgenius.Genius, LyricsProvider):
+class LyricsProvider(ABC):
     def __init__(self, config: ConfigBase):
-        lyricsgenius.Genius.__init__(self, config.genius_id)
-        LyricsProvider.__init__(self, config)
+        self.verbose = config.verbose if hasattr(config, 'verbose') else False
 
-    def get(self,
-            title: Text,
-            artist: Text) -> Text:
-        lr = self.search_song(title, artist, False)
-        return lr.lyrics if lr else None
+    @abstractmethod
+    def get(self, title, artist):
+        ...
 
     def add_lyrics_to_dataset(self,
                               tracks: Dict[Text, Track],
@@ -27,7 +26,7 @@ class LyricsGenius(lyricsgenius.Genius, LyricsProvider):
                 got = False
                 while not got:
                     try:
-                        tracks[idx].lyrics = self.lyrics(track.title, ' '.join(track.artists))
+                        tracks[idx].lyrics = self.get(track.title, ' '.join(track.artists))
                         got = True
                     except:
                         print('Wait and try again...')
