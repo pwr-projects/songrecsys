@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 from typing import NewType, Text
 
 ModelPath = NewType('Model', Text)
@@ -36,4 +37,4 @@ class MAG:
             poss_dims_str = ', '.join(map(str, poss_dims))
             assert dimensions in poss_dims, f'{dimensions} not available for {name}. Possible are: {poss_dims_str}'
 
-        return '/'.join([algo, weight.value, name]) + '.magnitude'
+        return Path() / algo / weight.value / (name + '.magnitude')

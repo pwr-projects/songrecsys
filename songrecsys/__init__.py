@@ -5,6 +5,7 @@ from .lyrics import *
 from .utils import *
 from .core import *
 from .schemes import *
+from .data import *
 
 import os
 for dir_name in (DEFAULT_PATH_DATA_DIR,
