@@ -20,3 +20,6 @@ class LyricWikia(LyricsProvider):
             pass
         finally:
             return lyrics
+
+    def add_lyrics_to_dataset(self, **kwargs):
+        return LyricsProvider.add_lyrics_to_dataset(**kwargs, getter_func=self.get)

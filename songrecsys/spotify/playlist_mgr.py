@@ -24,6 +24,7 @@ class PlaylistMgr:
                                   data: MergedData = None) -> Sequence[Text]:
         pls = data if data else list()
         pls_ids = list(map(lambda pl: pl.id, data)) if data else list()
+        print(f'Downloading playlist of {self._api.username}', end='... ')
 
         def filter_playlist_info(pl):
             pl_id = pl['id']
@@ -32,7 +33,6 @@ class PlaylistMgr:
                 return Playlist(id=pl['id'], name=pl['name'])
             return None
 
-        print(f'Downloading playlist of {self._api.username}', end='... ')
         api_pls = self._api.user_playlists(self._api.username, limit=min(50, max_count))
 
         while api_pls and len(pls) < max_count:
@@ -46,41 +46,39 @@ class PlaylistMgr:
                                   pls: Sequence[Playlist],
                                   save_interval: int = 20) -> Sequence[Dict]:
         interval_cnt = 0
-        for pl in tqdm(pls, 'Getting tracks from playlists', leave=False):
-            if not pl.tracks:
-                pl.tracks = self._extract_tr_info_from_pl(pl.id)
-                interval_cnt += 1
-            if interval_cnt == save_interval:
-                dump(merged_data=pls)
-                interval_cnt = 0
+        tracks_sum = 0
+        text_prefix = 'Getting tracks from playlists'
+        with tqdm(pls, text_prefix) as pbar:
+            for pl in pbar:
+                if not pl.tracks:
+                    pl.tracks = self._extract_tr_info_from_pl(pl.id)
+                    interval_cnt += 1
+                if interval_cnt == save_interval:
+                    dump(merged_data=pls)
+                    interval_cnt = 0
+                tracks_sum += len(pl.tracks)
+                pbar.set_description(f'{text_prefix} - {tracks_sum} tracks')
+            dump(merged_data=pls)
         return pls
 
     def get_all_playlists_and_tracks(self,
                                      save: bool = True,
-                                     load_saved: bool = True,
                                      update: bool = True,
-                                     max_playlist_count: int = np.inf) -> Tuple:
-        loaded_data = None
-        if load_saved:
-            loaded_data = load(playlists=True, tracks=True, merged_data=True)
+                                     max_playlist_count: int = np.inf,
+                                     merged_data: MergedData = None) -> Tuple:
+        if not update:
+            return self.split_merged_data(merged_data)
+        else:
+            print('Updating loaded data...')
 
-            if 'playlists' in loaded_data and 'tracks' in loaded_data:
-                loaded_data = self.merge_data(loaded_data.get('playlists'), loaded_data.get('tracks'))
-            elif 'merged_data' in loaded_data:
-                loaded_data = loaded_data.get('merged_data')
-
-            print(f'Loaded {len(loaded_data)} playlists')
-            if not update:
-                return self.split_merged_data(loaded_data)
-            else:
-                print('Updating loaded data...')
-
-        pls = self.get_all_playlists_of_user(max_playlist_count, loaded_data)
+        pls = self.get_all_playlists_of_user(max_playlist_count, merged_data)
         merged_data = MergedData(self.get_tracks_from_playlists(pls))
         playlists, tracks = self.split_merged_data(merged_data)
 
         if save:
-            dump(merged_data=merged_data, playlists=playlists, tracks=tracks)
+            dump(merged_data=merged_data,
+                 playlists=playlists,
+                 tracks=tracks)
 
         return playlists, tracks
 
@@ -112,7 +110,6 @@ class PlaylistMgr:
         artists = list(map(lambda artist_info: artist_info['name'],
                            track_info['artists']))
         title = track_info['name']
-
         return Track(id=song_id, title=title, artists=artists)
 
     def split_merged_data(self,

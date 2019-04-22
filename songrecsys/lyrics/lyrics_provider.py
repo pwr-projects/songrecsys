@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
+from pprint import pprint
 from time import sleep
-from typing import Dict, Text
+from typing import Callable, Dict, Text
 
 from tqdm.auto import tqdm
 
 from songrecsys.config.base import ConfigBase
-from songrecsys.schemes.track import Track
 from songrecsys.data import dump, load
+from songrecsys.data.manager import DataFormat
+from songrecsys.schemes.track import Track
 
 
 class LyricsProvider(ABC):
@@ -17,22 +19,30 @@ class LyricsProvider(ABC):
     def get(self, title, artist):
         ...
 
-    def add_lyrics_to_dataset(self,
-                              tracks: Dict[Text, Track],
-                              save_interval: int = 20) -> Dict[Text, Track]:
+    def download_lyrics(self,
+                        tracks: Dict[Text, Track],
+                        lyrics: Dict[Text, Text] = {},
+                        save_interval: int = 20) -> Dict[Text, Track]:
         interval_cnt = 0
-        for idx, track in tqdm(tracks.items(), 'Adding lyrics to tracks', leave=False):
-            if not track.lyrics:
-                got = False
-                while not got:
-                    try:
-                        tracks[idx].lyrics = self.get(track.title, ' '.join(track.artists))
-                        got = True
-                    except:
-                        print('Wait and try again...')
-                        sleep(2)
-                interval_cnt += 1
-            if interval_cnt == save_interval:
-                dump(tracks=tracks, verbose=False)
-                interval_cnt = 0
-        return tracks
+        with tqdm(tracks.items(), 'Adding lyrics to tracks') as pbar:
+            for idx, track in pbar:
+                if idx not in lyrics.keys():
+                    pbar.set_description(' '.join([f'{save_interval - interval_cnt}/{save_interval}',
+                                                   f'{track.artists} - {track.title}']))
+                    got = False
+                    while not got:
+                        try:
+
+                            lyrics[idx] = self.get(track.title.replace('(', '').replace(')', ''),
+                                                   ' '.join(track.artists))
+                            got = True
+                            interval_cnt += 1
+                        except:
+                            pbar.set_description('Trying again')
+                            sleep(2)
+                if interval_cnt == save_interval:
+                    pbar.set_description('Saving')
+                    dump(lyrics=lyrics)
+                    interval_cnt = 0
+            dump(lyrics=lyrics)
+        return lyrics
