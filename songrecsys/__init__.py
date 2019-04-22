@@ -10,5 +10,4 @@ from .data import *
 import os
 for dir_name in (DEFAULT_PATH_DATA_DIR,
                  DEFAULT_PATH_LANG_MODELS_DIR):
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
+    dir_name.mkdir(exist_ok=True)

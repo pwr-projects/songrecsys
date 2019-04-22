@@ -1,8 +1,7 @@
 #!.env/bin/python
+import csv
 from pprint import pprint
 from typing import Dict, Sequence
-
-from tqdm import tqdm
 
 from songrecsys import *
 
@@ -16,7 +15,9 @@ if __name__ == '__main__':
     summary(playlists, tracks)
     playlists = gs.add_lyrics_to_dataset(tracks)
 
-    # nlp = NLP(MAG.get(MAG.corpus.WIKIPEDIA, MAG.weight.heavy, 300))
+    # nlp = NLP(MAG(MAG.corpus.GOOGLE_NEWS,
+    #               MAG.weight.medium,
+    #               300), force_download=True)
 
     # for key, vector in nlp():
     #     print(key, end=' ')
