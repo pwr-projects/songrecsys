@@ -1,9 +1,9 @@
-import os
 from pathlib import Path
 from typing import NoReturn, Text
 
 import requests
-from tqdm.auto import tqdm
+
+from songrecsys.utils.utils import tqdm
 
 
 def download_file(url: Text,

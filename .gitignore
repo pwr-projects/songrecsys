@@ -105,5 +105,5 @@ venv.bak/
 
 # CUSTOM
 **/data
-!**/data/*.json
+!data/*.json
 **/.tmp

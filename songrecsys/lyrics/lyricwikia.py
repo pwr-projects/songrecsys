@@ -22,4 +22,4 @@ class LyricWikia(LyricsProvider):
             return lyrics
 
     def add_lyrics_to_dataset(self, **kwargs):
-        return LyricsProvider.add_lyrics_to_dataset(**kwargs, getter_func=self.get)
+        return self.add_lyrics_to_dataset(**kwargs, getter_func=self.get)

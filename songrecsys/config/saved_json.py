@@ -1,8 +1,7 @@
 import json
-from os.path import exists
 from typing import Dict, Text
 
-from .base import ConfigBase
+from songrecsys.config.base import ConfigBase
 
 
 class ConfigJSON(ConfigBase):
@@ -20,7 +19,3 @@ class ConfigJSON(ConfigBase):
     def load(cls, path: Text) -> Dict:
         with open(path, 'r') as fhd:
             return json.load(fhd)
-
-    @classmethod
-    def exists(cls, path: Text) -> bool:
-        return exists(path)
