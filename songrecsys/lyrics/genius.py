@@ -6,6 +6,8 @@ from lyricsgenius.api import Genius
 from songrecsys.config.base import ConfigBase
 from songrecsys.lyrics.lyrics_provider import LyricsProvider
 from songrecsys.schemes import Track
+from songrecsys.utils.utils import tqdm
+from songrecsys.data.manager import dump
 
 
 class LyricsGenius(Genius, LyricsProvider):
@@ -18,23 +20,3 @@ class LyricsGenius(Genius, LyricsProvider):
             artist: Text) -> Text:
         lr = self.search_song(title, artist, False)
         return lr.lyrics if lr else None
-
-    def add_lyrics_to_dataset(self,
-                              tracks: Dict[Text, Track],
-                              save_interval: int = 20) -> Dict[Text, Track]:
-        interval_cnt = 0
-        for idx, track in tqdm(tracks.items(), 'Adding lyrics to tracks', leave=False):
-            if not track.lyrics:
-                got = False
-                while not got:
-                    try:
-                        tracks[idx].lyrics = self.lyrics(track.title, ' '.join(track.artists))
-                        got = True
-                    except:
-                        print('Wait and try again...')
-                        sleep(2)
-                interval_cnt += 1
-            if interval_cnt == save_interval:
-                dump(tracks=tracks, verbose=False)
-                interval_cnt = 0
-        return tracks
