@@ -5,6 +5,7 @@ from lyricsgenius.api import Genius
 
 from songrecsys.config.base import ConfigBase
 from songrecsys.lyrics.lyrics_provider import LyricsProvider
+from songrecsys.schemes import Track
 
 
 class LyricsGenius(Genius, LyricsProvider):
