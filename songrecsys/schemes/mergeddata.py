@@ -6,11 +6,11 @@ from songrecsys.schemes.track import Track
 
 class MergedData(list):
     def __init__(self,
-                 data: Sequence):
-        all_playlists = all(map(lambda item: type(item) is Playlist, data))
+                 item: Sequence):
+        all_playlists = all(map(lambda item: type(item) is Playlist, item))
         if all_playlists:
-            super().__init__(data)
+            super().__init__(item)
         else:
-            for data in data:
-                data['tracks'] = [Track(**tr_info) for tr_info in data['tracks'] if tr_info]
-                self.append(Playlist(**data))
+            for item in data:
+                item['tracks'] = [Track(**tr_info) for tr_info in item['tracks'] if tr_info]
+                self.append(Playlist(**item))
