@@ -26,23 +26,3 @@ NLP(MAG(MAG.corpus.GOOGLE_NEWS,
 
 NLP(MAG(MAG.corpus.COMMON_CRAWL_GL, MAG.weight.heavy, 300))
 NLP(MAG(MAG.corpus.TWITTER, MAG.weight.heavy, 200))
-
-# for key, vector in nlp():
-#     print(key, end=' ')
-
-if __name__ == '__main__':
-    config = ConfigMgr()
-    sp = SpotifyWrapper(config, 'spotify')
-    gs = LyricsGenius(config)
-    pl = PlaylistMgr(sp)
-
-    playlists, tracks = pl.get_all_playlists_and_tracks(load_saved=True, update=False)
-    summary(playlists, tracks)
-    playlists = gs.add_lyrics_to_dataset(tracks)
-
-    # nlp = NLP(MAG(MAG.corpus.GOOGLE_NEWS,
-    #               MAG.weight.medium,
-    #               300), force_download=True)
-
-    # for key, vector in nlp():
-    #     print(key, end=' ')
