@@ -12,5 +12,6 @@
         "120",
         "--ignore",
         "E731"
-    ]
+    ],
+    "editor.fontFamily": "'Fira Code'"
 }

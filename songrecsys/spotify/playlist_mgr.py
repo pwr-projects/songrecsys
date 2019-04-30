@@ -1,18 +1,13 @@
-import os
-from pprint import pprint
-from typing import Dict, NoReturn, Sequence, Text, Tuple
+from typing import Dict, Sequence, Text, Tuple
 
 import numpy as np
-from spotipy import Spotify
-from tqdm import tqdm
 
-from songrecsys.consts import (DEFAULT_PATH_MERGED_DATA,
-                               DEFAULT_PATH_PLAYLISTS, DEFAULT_PATH_TRACKS)
-from songrecsys.data.manager import dump, load
+from songrecsys.data.manager import dump
 from songrecsys.schemes.mergeddata import MergedData
 from songrecsys.schemes.playlist import Playlist
 from songrecsys.schemes.track import Track
 from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
+from songrecsys.utils.utils import tqdm
 
 
 class PlaylistMgr:
@@ -112,40 +107,6 @@ class PlaylistMgr:
         title = track_info['name']
         return Track(id=song_id, title=title, artists=artists)
 
-    def split_merged_data(self,
-                          merged_data: MergedData,
-                          save: bool = True) -> Tuple:
-        playlists, tracks = {}, {}
 
-        for pl in tqdm(merged_data, 'Spliting: playlists', leave=False):
 
-            new_tracks = []
-            for pl_tr in tqdm(pl.tracks, 'Spliting: tracks', leave=False):
-                new_tracks.append(pl_tr.id)
-                tracks[pl_tr.id] = Track(**pl_tr.__dict__, use_kwargs=False)
 
-            new_playlist = Playlist(**pl.__dict__, use_kwargs=False)
-            new_playlist.tracks = new_tracks
-            playlists[pl.id] = new_playlist
-
-        if save:
-            dump(playlists=playlists, tracks=tracks)
-
-        return playlists, tracks
-
-    def merge_data(self,
-                   playlists: Dict,
-                   tracks: Dict,
-                   save: bool = True) -> MergedData:
-        merged_data = []
-        for playlist_id, playlist in playlists.items():
-            playlist = Playlist(id=playlist_id, **(playlist if isinstance(playlist, dict) else playlist.__dict__))
-            new_tracks = [Track(id=tr, **(tracks[tr] if isinstance(tracks[tr], dict) else tracks[tr].__dict__))
-                          for tr in playlist.tracks if tr]
-            playlist.tracks = new_tracks
-            merged_data.append(playlist)
-
-        if save:
-            dump(merged_data=merged_data)
-
-        return merged_data

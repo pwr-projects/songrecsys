@@ -1,12 +1,13 @@
 import json
-import sys
+from os import sys
+from pathlib import Path
 from typing import NoReturn, Text
 
-from ..consts import DEFAULT_PATH_CONFIG
-from .base import ConfigBase
-from .cli import ConfigCLI
-from .interactive import ConfigInteractive
-from .saved_json import ConfigJSON
+from songrecsys.config.base import ConfigBase
+from songrecsys.config.cli import ConfigCLI
+from songrecsys.config.interactive import ConfigInteractive
+from songrecsys.config.saved_json import ConfigJSON
+from songrecsys.consts import DEFAULT_PATH_CONFIG
 
 
 class ConfigMgr:
@@ -24,10 +25,13 @@ class ConfigMgr:
             setattr(self, k, v)
 
     def load(self) -> ConfigBase:
-        if len(sys.argv) != 1:
-            return ConfigCLI()
-
-        if ConfigJSON.exists(self._config_path):
+        try:
+            if len(sys.argv) > 1:
+                return ConfigCLI()
+        except:
+            ...
+            
+        if Path(self._config_path).exists():
             return ConfigJSON(self._config_path)
 
         return ConfigInteractive()

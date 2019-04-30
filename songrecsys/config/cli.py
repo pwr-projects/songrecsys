@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from .base import ConfigBase
+from songrecsys.config.base import ConfigBase
 
 
 class ConfigCLI(ConfigBase):

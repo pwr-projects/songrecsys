@@ -1,8 +1,7 @@
 from pathlib import Path
-from pprint import pprint
-from typing import NoReturn
 
 import numpy as np
+from tqdm.auto import tqdm as tdqm_orig
 
 
 class Summary:
@@ -55,3 +54,8 @@ def override_prompt(default_override: bool, where: Path) -> bool:
         answer = input(f'{where} exists. Override? [Yy/Nn] ')
         override = answer in 'YyTt'
     return override
+
+
+def tqdm(*args, **kwargs):
+    # return tdqm_orig(*args, **kwargs, miniters=1, mininterval=0.01)
+    return tdqm_orig(*args, **kwargs)

@@ -1,4 +1,4 @@
-from typing import Dict, Sequence
+from typing import Sequence
 
 from songrecsys.schemes.playlist import Playlist
 from songrecsys.schemes.track import Track

@@ -1,15 +1,15 @@
 from time import sleep
 from typing import Dict, Sequence, Text
 
-import lyricsgenius
+from lyricsgenius.api import Genius
 
-from songrecsys.config import ConfigBase
+from songrecsys.config.base import ConfigBase
 from songrecsys.lyrics.lyrics_provider import LyricsProvider
 
 
-class LyricsGenius(lyricsgenius.Genius, LyricsProvider):
+class LyricsGenius(Genius, LyricsProvider):
     def __init__(self, config: ConfigBase):
-        lyricsgenius.Genius.__init__(self, config.genius_id)
+        Genius.__init__(self, config.genius_id)
         LyricsProvider.__init__(self, config)
 
     def get(self,
