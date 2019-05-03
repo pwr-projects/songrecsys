@@ -1,51 +1,59 @@
 from pathlib import Path
+from typing import NoReturn
 
 import numpy as np
 from tqdm.auto import tqdm as tdqm_orig
 
+from songrecsys.schemes import Data
+
 
 class Summary:
-    def __init__(self,
-                 playlists=None,
-                 tracks=None,
-                 lyrics=None,
-                 indent: int = 4):
-        self.playlists = playlists
-        self.tracks = tracks
-        self.lyrics = lyrics
-        self.indent = ' ' * indent
 
-    def __call__(self):
-        if self.playlists:
-            self._summary_playlists()
-        if self.tracks:
-            self._summary_tracks()
-        if self.lyrics:
-            self._summary_lyrics()
+    DEFAULT_INDENT = 4
 
-    def _summary_playlists(self):
-        print('Playlists:')
+    def __init__(self, indent: int = DEFAULT_INDENT):
+        self._indent = self.indent(indent)
 
-        count = len(self.playlists)
-        avg_count_per_pl = np.round(np.average(list(map(lambda pl: len(pl.tracks),
-                                                        self.playlists.values()))), 1)
+    def __call__(self, data: Data, indent: int = DEFAULT_INDENT) -> NoReturn:
+        self.show(data, self._indent)
 
-        print(f'{self.indent}Count:           {count}')
-        print(f'{self.indent}Avg track count: {avg_count_per_pl}')
+    @classmethod
+    def indent(cls, indent: int) -> str:
+        return ' ' * indent
 
-    def _summary_tracks(self):
+    @classmethod
+    def show(cls, data: Data, indent: int = DEFAULT_INDENT) -> NoReturn:
+        if data.playlists:
+            cls._summary_playlists(data, indent)
+        if data.tracks:
+            cls._summary_tracks(data, indent)
+
+    @classmethod
+    def _summary_playlists(cls, data: Data, indent: int) -> NoReturn:
+        indent = cls.indent(indent)
+
+        for username in data.playlists:
+            print(f'Playlists of user: {username}')
+
+            count = len(data.playlists.get(username))
+            avg_count_per_pl = map(lambda pl: len(pl.tracks), data.playlists.get(username))
+            avg_count_per_pl = np.average(list(avg_count_per_pl))
+            avg_count_per_pl = np.round(avg_count_per_pl, 1)
+
+            print(f'{indent}Count:           {count}')
+            print(f'{indent}Avg track count: {avg_count_per_pl}')
+
+    @classmethod
+    def _summary_tracks(cls, data: Data, indent: int) -> NoReturn:
+        indent = cls.indent(indent)
+
         print('Tracks:')
 
-        count = len(self.tracks)
+        count = len(data.tracks)
+        count_with_lyrics = sum(map(lambda track: int(bool(track.lyrics)), data.tracks.values()))
 
-        print(f'{self.indent}Count: {count}')
-
-    def _summary_lyrics(self):
-        print('Lyrics:')
-
-        count = len(self.lyrics)
-
-        print(f'{self.indent}Count: {count}')
+        print(f'{indent}Count:             {count}')
+        print(f'{indent}Count with lyrics: {count_with_lyrics}')
 
 
 def override_prompt(default_override: bool, where: Path) -> bool:
@@ -57,5 +65,5 @@ def override_prompt(default_override: bool, where: Path) -> bool:
 
 
 def tqdm(*args, **kwargs):
-    # return tdqm_orig(*args, **kwargs, miniters=1, mininterval=0.01)
-    return tdqm_orig(*args, **kwargs)
+    return tdqm_orig(*args, **kwargs, miniters=5, mininterval=0.1)
+    # return tdqm_orig(*args, **kwargs)

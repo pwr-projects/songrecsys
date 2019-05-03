@@ -1,4 +1,4 @@
-from typing import Text
+from typing import List
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -7,11 +7,8 @@ from songrecsys.config.base import ConfigBase
 
 
 class SpotifyWrapper(Spotify):
-    def __init__(self,
-                 config: ConfigBase,
-                 username: Text,
-                 *args,
-                 **kwargs):
+
+    def __init__(self, config: ConfigBase, usernames: List[str], *args, **kwargs):
         '''Spotipy wrapper allowing to perform operations on playlists and so on
 
         Arguments:
@@ -20,11 +17,10 @@ class SpotifyWrapper(Spotify):
             username {Text} -- name of user used for scraper
         '''
 
-        auth = SpotifyClientCredentials(client_id=config.spotify_id,
-                                        client_secret=config.spotify_secret)
+        auth = SpotifyClientCredentials(client_id=config.spotify_id, client_secret=config.spotify_secret)
         super().__init__(client_credentials_manager=auth, *args, **kwargs)
-        self._username = username
+        self._usernames = usernames
 
     @property
-    def username(self):
-        return self._username
+    def usernames(self) -> List[str]:
+        return self._usernames

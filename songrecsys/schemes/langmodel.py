@@ -1,8 +1,8 @@
 from enum import Enum
 from pathlib import Path
-from typing import NewType, Text
+from typing import NewType
 
-ModelPath = NewType('Model', Text)
+ModelPath = NewType('Model', str)
 
 
 class MAG:
@@ -29,39 +29,29 @@ class MAG:
         WIKI_NEWS_SUBWORD = lambda _: (MAG.algorithm.ft, 'wiki-news-300d-1M-subword', [])
         COMMON_CRAWL_FT = lambda _: (MAG.algorithm.ft, 'crawl-300d-2M', [])
 
-    def __init__(self,
-                 corpus: corpus,
-                 weight: weight,
-                 dimension: int = None):
+    def __init__(self, corpus: corpus, weight: weight, dimension: int = None):
         self.corpus = corpus
         self.weight = weight
         self.dimension = dimension
 
     @property
-    def concatenated_info(self):
+    def concatenated_info(self) -> str:
         return MAG.concat_info(self.corpus, self.weight, self.dimension)
 
     @staticmethod
-    def concat_info(corpus: corpus,
-                    weight: weight,
-                    dimensions: int = None):
+    def concat_info(corpus: corpus, weight: weight, dimensions: int = None) -> str:
         algo, name, _ = corpus(dimensions)
-        return Path(algo) / weight.value / name
+        return '/'.join([algo, weight.value, name])
 
     @staticmethod
-    def get(corpus: corpus,
-            weight: weight,
-            dimensions: int = None) -> ModelPath:
+    def get(corpus: corpus, weight: weight, dimensions: int = None) -> ModelPath:
         algo, name, poss_dims = corpus(dimensions)
 
         if poss_dims:
             poss_dims_str = ', '.join(map(str, poss_dims))
-            assert (dimensions in poss_dims,
-                    f'{dimensions} not available for {name}. Possible are: {poss_dims_str}')
+            assert (dimensions in poss_dims, f'{dimensions} not available for {name}. Possible are: {poss_dims_str}')
 
         return Path() / algo / (name + '.magnitude')
 
     def __call__(self) -> ModelPath:
-        return MAG.get(self.corpus,
-                       self.weight,
-                       self.dimension)
+        return MAG.get(self.corpus, self.weight, self.dimension)

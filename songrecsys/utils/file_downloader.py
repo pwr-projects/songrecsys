@@ -6,9 +6,7 @@ import requests
 from songrecsys.utils.utils import tqdm
 
 
-def download_file(url: Text,
-                  filename: Text = False,
-                  verbose: bool = False) -> NoReturn:
+def download_file(url: Text, filename: Text = False, verbose: bool = False) -> NoReturn:
     if not filename:
         local_filename = Path('.') / url.split('/')[-1]
     else:
@@ -24,10 +22,6 @@ def download_file(url: Text,
         print(dict(num_bars=num_bars))
 
     with open(local_filename, 'wb') as fp:
-        for chunk in tqdm(r.iter_content(chunk_size=chunk_size),
-                          total=num_bars,
-                          unit='KB',
-                          desc=local_filename,
-                          leave=True):
+        for chunk in tqdm(r.iter_content(chunk_size=chunk_size), total=num_bars, unit='KB', desc=local_filename, leave=True):
             fp.write(chunk)
     return

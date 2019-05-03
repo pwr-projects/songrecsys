@@ -4,9 +4,8 @@ from songrecsys.config.base import ConfigBase
 
 
 class ConfigCLI(ConfigBase):
-    def __init__(self,
-                 *args,
-                 **kwargs):
+
+    def __init__(self, *args, **kwargs):
         parser = ArgumentParser(description='Song recommendation system')
         parser.add_argument('--spotify_id', type=str, help='Spotify app client id')
         parser.add_argument('--spotify_secret', type=str, help='Spotify app client secret')
@@ -17,5 +16,5 @@ class ConfigCLI(ConfigBase):
         super().__init__(**args.__dict__)
 
     @property
-    def base_dict(self):
+    def base_dict(self) -> dict:
         return super().base_dict

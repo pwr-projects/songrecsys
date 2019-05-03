@@ -1,89 +1,68 @@
-from typing import Dict, Sequence, Text, Tuple
+from typing import List, Union
 
 import numpy as np
 
 from songrecsys.data.manager import dump
-from songrecsys.schemes.mergeddata import MergedData
-from songrecsys.schemes.playlist import Playlist
-from songrecsys.schemes.track import Track
+from songrecsys.schemes import Data, Playlist, Track
 from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
 from songrecsys.utils.utils import tqdm
 
 
 class PlaylistMgr:
-    def __init__(self, spotify_api: SpotifyWrapper):
+
+    def __init__(self, spotify_api: SpotifyWrapper, data: Data = Data()):
         self._api = spotify_api
+        self._data: Data = data
 
-    def get_all_playlists_of_user(self,
-                                  max_count: int = np.inf,
-                                  data: MergedData = None) -> Sequence[Text]:
-        pls = data if data else list()
-        pls_ids = list(map(lambda pl: pl.id, data)) if data else list()
-        print(f'Downloading playlist of {self._api.username}', end='... ')
+    def get_all_playlists_of_user(self, username: str, max_count: int = np.inf) -> Data:
+        # print(f'Downloading playlist of {username}', end='... ')
 
-        def filter_playlist_info(pl):
+        pls_ids = list(map(lambda pl: pl.id, self._data.playlists.get(username)))
+
+        def filter_playlist_info(pl: dict):
             pl_id = pl['id']
             if pl_id not in pls_ids:
                 pls_ids.append(pl_id)
-                return Playlist(id=pl['id'], name=pl['name'])
+                return Playlist(id=pl_id, name=pl['name'])
             return None
 
-        api_pls = self._api.user_playlists(self._api.username, limit=min(50, max_count))
+        api_pls = self._api.user_playlists(username, limit=min(50, max_count))
 
-        while api_pls and len(pls) < max_count:
-            pls.extend(filter(None, map(filter_playlist_info, api_pls['items'])))
+        while api_pls:
+            self._data.playlists.get(username).extend(filter(None, map(filter_playlist_info, api_pls['items'])))
             api_pls = self._api.next(api_pls) if api_pls['next'] else None
-        print(f'{len(pls)} playlists')
 
-        return pls
+        return self._data
 
-    def get_tracks_from_playlists(self,
-                                  pls: Sequence[Playlist],
-                                  save_interval: int = 20) -> Sequence[Dict]:
-        interval_cnt = 0
+    def get_tracks_from_playlists(self, username: str, save_interval: int = 20) -> Data:
         tracks_sum = 0
         text_prefix = 'Getting tracks from playlists'
-        with tqdm(pls, text_prefix) as pbar:
-            for pl in pbar:
-                if not pl.tracks:
-                    pl.tracks = self._extract_tr_info_from_pl(pl.id)
-                    interval_cnt += 1
+        with tqdm(enumerate(self._data.playlists.get(username)), text_prefix) as pbar:
+            for interval_cnt, pl in pbar:
+                tracks = self._extract_tr_info_from_pl(username, pl.id)
+
+                for track in tracks:
+                    data.tracks[track['id']] = Track(**{key: track[key] for key in ['title', 'artists', 'lyrics']})
+                    pl.tracks.append(track['id'])
+
                 if interval_cnt == save_interval:
-                    dump(merged_data=pls)
+                    dump(merged_data=self._data)
                     interval_cnt = 0
+
                 tracks_sum += len(pl.tracks)
                 pbar.set_description(f'{text_prefix} - {tracks_sum} tracks')
-            dump(merged_data=pls)
-        return pls
+        dump(merged_data=self._data)
+        return self._data
 
-    def get_all_playlists_and_tracks(self,
-                                     save: bool = True,
-                                     update: bool = True,
-                                     max_playlist_count: int = np.inf,
-                                     merged_data: MergedData = None) -> Tuple:
-        if not update:
-            return self.split_merged_data(merged_data)
-        else:
-            print('Updating loaded data...')
+    def get_all_playlists_and_tracks_of_user(self, username: str, save: bool = True, max_playlist_count: int = np.inf) -> Data:
+        self.get_all_playlists_of_user(username, max_playlist_count)
+        self.get_tracks_from_playlists(username)
+        return self._data
 
-        pls = self.get_all_playlists_of_user(max_playlist_count, merged_data)
-        merged_data = MergedData(self.get_tracks_from_playlists(pls))
-        playlists, tracks = self.split_merged_data(merged_data)
+    def _extract_tr_info_from_pl(self, username: str, playlist_id: str) -> List[dict]:
+        parse_track_info = lambda tracks: list(map(self._extract_specific_info_from_track_item, tracks['items']))
 
-        if save:
-            dump(merged_data=merged_data,
-                 playlists=playlists,
-                 tracks=tracks)
-
-        return playlists, tracks
-
-    def _extract_tr_info_from_pl(self, playlist_id: Text) -> Sequence:
-        parse_track_info = lambda tracks: list(map(self._extract_specific_info_from_track_item,
-                                                   tracks['items']))
-
-        results = self._api.user_playlist(self._api.username,
-                                          playlist_id,
-                                          fields='tracks,next')
+        results = self._api.user_playlist(username, playlist_id, fields='tracks,next')
 
         tracks = results['tracks']
         all_tracks_info = parse_track_info(tracks)
@@ -95,18 +74,13 @@ class PlaylistMgr:
 
         return all_tracks_info
 
-    def _extract_specific_info_from_track_item(self, track_item: Dict) -> Dict:
+    def _extract_specific_info_from_track_item(self, track_item: dict) -> Union[Track, None]:
         track_info = track_item.get('track')
 
         if not track_info:
             return None
 
         song_id = track_info['id']
-        artists = list(map(lambda artist_info: artist_info['name'],
-                           track_info['artists']))
+        artists = list(map(lambda artist_info: artist_info['name'], track_info['artists']))
         title = track_info['name']
-        return Track(id=song_id, title=title, artists=artists)
-
-
-
-
+        return dict(id=song_id, title=title, artists=artists)
