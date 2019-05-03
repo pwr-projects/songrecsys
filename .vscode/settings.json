@@ -1,0 +1,17 @@
+{
+    "python.pythonPath": ".env/bin/python",
+    "python.linting.pylintEnabled": true,
+    "cSpell.words": [
+        "oauth",
+        "songrecsys"
+    ],
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--experimental",
+        "--max-line-length",
+        "120",
+        "--ignore",
+        "E731"
+    ],
+    "editor.fontFamily": "'Fira Code'"
+}
