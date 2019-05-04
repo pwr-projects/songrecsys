@@ -65,5 +65,5 @@ def override_prompt(default_override: bool, where: Path) -> bool:
 
 
 def tqdm(*args, **kwargs):
-    return tdqm_orig(*args, **kwargs, miniters=5, mininterval=0.1)
+    return tdqm_orig(*args, **kwargs, miniters=1, mininterval=0.1)
     # return tdqm_orig(*args, **kwargs)

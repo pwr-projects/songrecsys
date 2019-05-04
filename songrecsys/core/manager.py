@@ -2,16 +2,17 @@ from typing import List
 
 from songrecsys.config import ConfigMgr
 from songrecsys.lyrics import LyricsProvider
+from songrecsys.schemes import Data
 from songrecsys.spotify import PlaylistMgr, SpotifyWrapper
 
 
 class Manager:
 
-    def __init__(self, usernames: List[str], lyrics_source: LyricsProvider):
+    def __init__(self, usernames: List[str], lyrics_source: LyricsProvider, data: Data = Data()):
         self._config = ConfigMgr()
         self._sp = SpotifyWrapper(self.config, usernames)
         self._lp = lyrics_source(self.config)
-        self._pl = PlaylistMgr(self._sp)
+        self._pl = PlaylistMgr(self._sp, data)
 
     @property
     def config(self):
