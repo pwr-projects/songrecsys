@@ -81,7 +81,7 @@ class ArtistsDownloader:
                     try:
                         for album in album_bar:
                             album_bar.set_description(f'{albums_loop_str}')
-                            if not hasattr(album, 'tracks') and (hasattr(album, 'tracks') and not album.tracks):
+                            if not hasattr(album, 'tracks') or (hasattr(album, 'tracks') and not album.tracks):
                                 album_bar.set_description(f'{albums_loop_str} - {album.id}')
                                 sleep(0.2)
                                 tracks = self.get_all_tracks_from_album(album.id)
