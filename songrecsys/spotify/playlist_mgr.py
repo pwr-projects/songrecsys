@@ -1,7 +1,10 @@
+from pprint import pprint
+from time import sleep
 from typing import List, Union
 
 import numpy as np
-from pprint import pprint
+from spotipy import SpotifyException
+
 from songrecsys.data.manager import dump
 from songrecsys.schemes import Data, Playlist, Track
 from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
@@ -23,7 +26,7 @@ class PlaylistMgr:
             pl_id = pl['id']
             if pl_id not in pls_ids:
                 pls_ids.add(pl_id)
-                return Playlist(id=pl_id, name=pl['name'])
+                return Playlist(**pl)
             return None
 
         api_pls = self._api.user_playlists(username, limit=min(50, max_count))
@@ -36,34 +39,26 @@ class PlaylistMgr:
 
         return self._data
 
-    def get_tracks_from_playlists(self, username: str, update:bool, save_interval: int = 20) -> Data:
+    def get_tracks_from_playlists(self, username: str, update: bool, save_interval: int = 50) -> Data:
         text_prefix = 'Getting tracks from playlists'
         with tqdm(tuple(enumerate(self._data.playlists.get(username))), text_prefix) as pbar:
-
-            for _, pl in pbar:
+            for interval_cnt, pl in pbar:
                 pbar.set_description(f'{text_prefix} - tracks count: {len(self._data.tracks)}')
-
-                tracks = self._extract_tr_info_from_pl(username, pl.id)
                 pl.tracks = set(pl.tracks)
+                tracks = self._extract_tr_info_from_pl(username, pl.id)
                 for track in filter(None, tracks):
-                    track_id = track.get('id')
-                    if update or track_id not in self._data.tracks.keys():
-                        self._data.tracks[track_id] = Track(**{
-                            key: track.get(key)
-                            for key in ['title', 'artists', 'lyrics', 'artists_ids']
-                            if track.get(key)
-                        })
+                    track.add_to_data(self._data)
+                    pl.tracks.add(track.id)
 
-                        pl.tracks.add(track_id)
-
-                # if interval_cnt % save_interval == 0:
-                #     pbar.set_description(f'{text_prefix} - saving')
-                #     dump(self._data, verbose=False)
-
+                if interval_cnt % save_interval == 0:
+                    pbar.set_description(f'{text_prefix} - saving')
+                    dump(self._data, verbose=False)
+                sleep(0.2)
         dump(self._data)
         return self._data
 
-    def get_all_playlists_and_tracks_of_user(self, username: str, update:bool, max_playlist_count: int = np.inf) -> Data:
+    def get_all_playlists_and_tracks_of_user(self, username: str, update: bool,
+                                             max_playlist_count: int = np.inf) -> Data:
         self.get_all_playlists_of_user(username, max_playlist_count)
         self.get_tracks_from_playlists(username, update)
         return self._data
@@ -72,29 +67,25 @@ class PlaylistMgr:
         for username in self._api.usernames:
             self.get_all_playlists_and_tracks_of_user(username, update)
 
-    def _extract_tr_info_from_pl(self, username: str, playlist_id: str) -> List[dict]:
-        parse_track_info = lambda tracks: list(map(self._extract_specific_info_from_track_item, tracks['items']))
+    def _extract_tr_info_from_pl(self, username: str, playlist_id: str) -> List[Track]:
+        try:
+            tracks = self._api.user_playlist(username, playlist_id, fields='tracks,next')
+        except SpotifyException as e:
+            print(e)
+            return []
 
-        results = self._api.user_playlist(username, playlist_id, fields='tracks,next')
+        all_tracks_info: list = list()
 
-        tracks = results['tracks']
-        all_tracks_info = parse_track_info(tracks)
+        while tracks:
+            all_tracks_info.extend(filter(None, map(lambda item: item.get('track'), tracks.get('tracks').get('items'))))
+            tracks = self._api.next(tracks) if tracks.get('next') else None
 
-        while tracks['next']:
-            tracks = self._api.next(tracks)
-            tracks_info = parse_track_info(tracks)
-            all_tracks_info.extend(list(tracks_info))
+        return list(map(self.extract_specific_info_from_track_item, all_tracks_info))
 
-        return all_tracks_info
-
-    def _extract_specific_info_from_track_item(self, track_item: dict) -> Union[Track, None]:
-        track_info = track_item.get('track')
-
-        if not track_info:
-            return None
-
-        song_id = track_info['id']
-        artists = list(map(lambda artist_info: artist_info['name'], track_info['artists']))
-        artists_ids = list(map(lambda artist_info: artist_info['id'], track_info['artists']))
-        title = track_info['name']
-        return dict(id=song_id, title=title, artists=artists, artists_ids=artists_ids)
+    @classmethod
+    def extract_specific_info_from_track_item(cls, track_item: dict) -> Track:
+        artists = list(map(lambda artist_info: artist_info['name'], track_item['artists']))
+        artists_ids = list(map(lambda artist_info: artist_info['id'], track_item['artists']))
+        title = track_item['name']
+        del track_item['artists']
+        return Track(title, artists, artists_ids, **track_item)

@@ -3,7 +3,7 @@ from typing import List
 from songrecsys.config import ConfigMgr
 from songrecsys.lyrics import LyricsProvider
 from songrecsys.schemes import Data
-from songrecsys.spotify import PlaylistMgr, SpotifyWrapper
+from songrecsys.spotify import ArtistsDownloader, PlaylistMgr, SpotifyWrapper
 
 
 class Manager:
@@ -13,6 +13,7 @@ class Manager:
         self._sp = SpotifyWrapper(self.config, usernames)
         self._lp = lyrics_source(self.config)
         self._pl = PlaylistMgr(self._sp, data)
+        self._ad = ArtistsDownloader(self._sp, data)
 
     @property
     def config(self):
@@ -41,3 +42,11 @@ class Manager:
     @property
     def playlist(self):
         return self.pl
+
+    @property
+    def ad(self):
+        return self._ad
+
+    @property
+    def artists(self):
+        return self._ad

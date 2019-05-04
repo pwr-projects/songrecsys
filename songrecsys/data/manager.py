@@ -55,7 +55,7 @@ def save_to_json(what: object, where: Path, default_override: bool = True, verbo
             # # Uncomment to use "stream" mode
             # for chunk in tqdm(json.JSONEncoder(default=lambda obj: obj.__dict__).iterencode(what)):
             #     fhd.write(chunk + '\n')
-            json.dump(what, fhd, indent=4, default=lambda obj: obj.__dict__)
+            json.dump(what, fhd, indent=4, default=lambda obj: list(obj) if isinstance(obj, set) else obj.__dict__)
     return what
 
 

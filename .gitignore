@@ -106,4 +106,5 @@ venv.bak/
 # CUSTOM
 **/.tmp
 **/models
-/data/data
+/data/*
+!/data/data.zip
