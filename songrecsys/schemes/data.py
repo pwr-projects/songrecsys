@@ -131,3 +131,8 @@ class Data:
         self.tracks = tracks
         self.artists = artists
         self.albums = albums
+
+    @classmethod
+    def from_json(cls, data: dict):
+        _data = {k: data[k] for k in ['playlists', 'tracks', 'artists', 'albums'] if data.get(k)}
+        return Data(**_data)

@@ -7,10 +7,10 @@ Song recommendation system
     "playlists": {
         "{username: str}": [
             {
-                "id": "{spotify_playlist_id: str}",
+                "id": "{playlist_id: str}",
                 "name" : "{name: str}",
                 "tracks": [
-                    "{spotify_track_id: str}",
+                    "{track_id: str}",
                     ...
                 ]
             },
@@ -24,7 +24,36 @@ Song recommendation system
                 "{artist: str}",
                 ...
             ],
+            "artists_ids": [
+                "{artist_id: str}",
+                ...
+            ],
             "lyrics": "{lyrics: str}",
+        },
+        ...
+    },
+    "artists": {
+        "{artist_id: str}": {
+            "name": "{name: str}",
+            "albums_id": [
+                "{album_id: str}",
+                ...
+            ],
+            ...
+        },
+        ...
+    },
+    "albums": {
+        "{album_id: str}": {
+            "artists_id": [
+                "{artist_id: str}",
+                ...
+            ],
+            "name": "{name: str}",
+            "tracks": [
+                "{track_id: str}",
+                ...
+            ],
         },
         ...
     }
