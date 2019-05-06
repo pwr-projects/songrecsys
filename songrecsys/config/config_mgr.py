@@ -36,5 +36,7 @@ class ConfigMgr:
         return ConfigInteractive()
 
     def dump(self) -> object:
-        save_to_json(self._config.base_dict, self._config_path)
+        conf = self._config.base_dict.copy()
+        conf['request_interval'] = conf['request_interval'] * 1000
+        save_to_json(conf, self._config_path)
         return self

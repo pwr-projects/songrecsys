@@ -1,3 +1,3 @@
-from .playlist_mgr import PlaylistMgr
-from .spotify_wrapper import SpotifyWrapper
-from .artists import ArtistsDownloader
+from .playlist_mgr import *
+from .spotify_wrapper import *
+from .artists import *

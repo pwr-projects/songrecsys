@@ -11,3 +11,5 @@ class NLP(Magnitude):
         model = MagnitudeUtils.download_model(str(self._model_path.concatenated_info), download_dir=str(DEFAULT_PATH_LANG_MODELS_DIR), log=True)
 
         super().__init__(model, stream=use_stream)
+
+    

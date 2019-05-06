@@ -3,11 +3,11 @@ from typing import Dict, Sequence
 
 from lyricsgenius.api import Genius
 
-from songrecsys.config.base import ConfigBase
+from songrecsys.config import ConfigBase
+from songrecsys.data import dump
 from songrecsys.lyrics.lyrics_provider import LyricsProvider
 from songrecsys.schemes import Track
-from songrecsys.utils.utils import tqdm
-from songrecsys.data.manager import dump
+from songrecsys.utils import tqdm
 
 
 class LyricsGenius(Genius, LyricsProvider):

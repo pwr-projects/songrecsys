@@ -1,19 +1,20 @@
+import multiprocessing as mp
 from abc import ABC, abstractmethod
+from sys import stdout
 from time import sleep
 from typing import Dict
-import multiprocessing as mp
-from songrecsys.config.base import ConfigBase
-from songrecsys.data.manager import DataFormat, dump
-from songrecsys.utils.utils import tqdm
+
+from songrecsys.config import ConfigBase
+from songrecsys.data import DataFormat, dump
 from songrecsys.schemes import Data
-from sys import stdout
+from songrecsys.utils import tqdm
 
 
 def downloader(track, getter):
     artists = ', '.join(track.artists)
     what = f'{artists} - {track.title}'
-    stdout.write(f'Downloading {what}\n')
-    
+    # stdout.write(f'Downloading {what}\n')
+
     stdout.flush()
     got = False
     while not got:
@@ -37,7 +38,7 @@ class LyricsProvider(ABC):
         ...
 
     def download_lyrics(self, data: Data, save_interval: int = 20) -> Data:
-        interval_cnt = 0
+        # interval_cnt = 0
         to_download = tuple(filter(lambda track: not track.lyrics, data.tracks.values()))
         with mp.Pool(mp.cpu_count()) as pool:
             pool.starmap(downloader, [(track, self.get) for track in to_download])

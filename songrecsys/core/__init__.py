@@ -1,2 +1,2 @@
-from .nlp import *
 from .manager import *
+from .classes import *

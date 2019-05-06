@@ -7,7 +7,10 @@ from songrecsys.config.base import ConfigBase
 class ConfigJSON(ConfigBase):
 
     def __init__(self, path: Path, *args, **kwargs):
-        super().__init__(**load_from_json(path))
+        conf = load_from_json(path)
+        if conf.get('request_interval'):
+            conf['request_interval'] = conf.get('request_interval') / 1000
+        super().__init__(**conf)
 
     @property
     def base_dict(self) -> dict:

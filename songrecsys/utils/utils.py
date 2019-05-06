@@ -32,16 +32,15 @@ class Summary:
     def _summary_playlists(cls, data: Data, indent: int) -> NoReturn:
         indent = cls.indent(indent)
 
-        for username in data.playlists:
-            print(f'Playlists of user: {username}')
+        print('Playlists:')
 
-            count = len(data.playlists.get(username))
-            avg_count_per_pl = map(lambda pl: len(pl.tracks), data.playlists.get(username))
-            avg_count_per_pl = np.average(list(avg_count_per_pl))
-            avg_count_per_pl = np.round(avg_count_per_pl, 1)
+        count = len(data.playlists)
+        avg_count_per_pl = [len(data.playlists[pl].tracks) for pl in data.playlists if data.playlists[pl].tracks]
+        avg_count_per_pl = np.average(avg_count_per_pl)
+        avg_count_per_pl = np.round(avg_count_per_pl, 1)
 
-            print(f'{indent}Count:           {count}')
-            print(f'{indent}Avg track count: {avg_count_per_pl}')
+        print(f'{indent}Count:             {count}')
+        print(f'{indent}Avg track count:   {avg_count_per_pl}')
 
     @classmethod
     def _summary_tracks(cls, data: Data, indent: int) -> NoReturn:

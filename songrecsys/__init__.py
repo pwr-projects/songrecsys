@@ -5,6 +5,7 @@ from .consts import *
 from .core import *
 from .data import *
 from .lyrics import *
+from .nlp import *
 from .schemes import *
 from .spotify import *
 from .utils import *
