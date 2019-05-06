@@ -13,7 +13,7 @@ class BaseDataItem(ABC):
             raise f'Cannot add to data because there is no `{name}` attribute'
 
     @abstractmethod
-    def add_to_data(self, data, override) -> NoReturn:
+    def add_to_data(self, data, override):
         raise NotImplementedError
 
     @abstractmethod
@@ -36,10 +36,11 @@ class Track(BaseDataItem):
         self.artists_ids: Set[str] = artists_ids
         self.lyrics: str = lyrics
 
-    def add_to_data(self, data, override: bool = True) -> NoReturn:
+    def add_to_data(self, data, override: bool = True):
         self.checkattr()
         if override or self.id not in data.tracks:
             data.tracks[self.id] = Track(**self.__dict__, use_id=False)
+        return data
 
     def check(self) -> bool:
         return all(map(lambda attr: hasattr(self, attr),
@@ -68,10 +69,11 @@ class Playlist(BaseDataItem):
         self.name: str = name
         self.tracks: Set[str] = tracks
 
-    def add_to_data(self, data, override: bool = True) -> NoReturn:
+    def add_to_data(self, data, override: bool = True):
         self.checkattr()
         if override or self.id not in data.playlists:
             data.playlists[self.id] = Playlist(**self.__dict__, use_id=False)
+        return data
 
     def check(self) -> bool:
         return all(map(lambda attr: hasattr(self, attr), ['username', 'name', 'tracks'])) and not hasattr(self, 'id')
@@ -91,10 +93,11 @@ class Artist(BaseDataItem):
         if use_id:
             self.id = id
 
-    def add_to_data(self, data, override: bool = True) -> NoReturn:
+    def add_to_data(self, data, override: bool = True):
         self.checkattr()
         if override or self.id not in data.artists:
             data.artists[self.id] = Artist(**self.__dict__, use_id=False)
+        return data
 
     def check(self) -> bool:
         return all(map(lambda attr: hasattr(self, attr), ['name', 'albums_id'])) and not hasattr(self, 'id')
@@ -123,6 +126,7 @@ class Album(BaseDataItem):
         self.checkattr()
         if override or self.id not in data.albums:
             data.albums[self.id] = Album(**self.__dict__, use_id=False)
+        return data
 
     def check(self) -> bool:
         return all(map(lambda attr: hasattr(self, attr), ['artists_id', 'name'])) and not hasattr(self, 'id')

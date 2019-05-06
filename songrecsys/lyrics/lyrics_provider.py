@@ -6,26 +6,9 @@ from typing import Dict
 
 from songrecsys.config import ConfigBase
 from songrecsys.data import DataFormat, dump
+from songrecsys.multiprocessing import mp_lyrics_downloader
 from songrecsys.schemes import Data
 from songrecsys.utils import tqdm
-
-
-def downloader(track, getter):
-    artists = ', '.join(track.artists)
-    what = f'{artists} - {track.title}'
-    # stdout.write(f'Downloading {what}\n')
-
-    stdout.flush()
-    got = False
-    while not got:
-        try:
-            track.lyrics = getter(track.title.replace('(', '').replace(')', ''), ' '.join(track.artists))
-            got = True
-        except:
-            sleep(2)
-    if track.lyrics:
-        stdout.write(f'Downloaded  {what}\n')
-        stdout.flush()
 
 
 class LyricsProvider(ABC):
@@ -41,7 +24,7 @@ class LyricsProvider(ABC):
         # interval_cnt = 0
         to_download = tuple(filter(lambda track: not track.lyrics, data.tracks.values()))
         with mp.Pool(mp.cpu_count()) as pool:
-            pool.starmap(downloader, [(track, self.get) for track in to_download])
+            pool.starmap(mp_lyrics_downloader, [(track, self.get) for track in to_download])
 
             # for track in pbar:
             #     pbar.set_description(f'{save_interval - interval_cnt}/{save_interval}')

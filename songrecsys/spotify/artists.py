@@ -7,25 +7,10 @@ from typing import Dict, List, NoReturn, Set
 
 from songrecsys.config import ConfigBase
 from songrecsys.data import dump
+from songrecsys.multiprocessing.artists import mp_artist_extractor
 from songrecsys.schemes import Album, Artist, Data, Track
 from songrecsys.spotify import PlaylistMgr, SpotifyWrapper
 from songrecsys.utils import tqdm
-
-
-def mp_artist_extractor(args) -> Artist:
-    sp, artist_id = args
-    # stdout.write(f'Downloading artist: {artist_id}\n')
-    # stdout.flush()
-    not_downloaded = True
-    while not_downloaded:
-        try:
-            artist = ArtistsDownloader.extra_info_from_artist(sp, artist_id)
-            not_downloaded = False
-        except:
-            # stdout.write(f'Retrying to download artist: {artist_id}\n')
-            # stdout.flush()
-            sleep(2)
-    return artist
 
 
 class ArtistsDownloader:
@@ -79,7 +64,7 @@ class ArtistsDownloader:
 
         return list(map(Track.from_api, all_tracks))
 
-    def get_all_albums_and_all_tracks(self, save_interval: int = 20, only_playlists: bool = True) -> Data:
+    def get_all_albums_and_all_tracks(self, save_interval: int = 50, only_playlists: bool = True) -> Data:
         if only_playlists:
             artist_ids: set = set()
             for pl in self._data.playlists.values():
@@ -88,8 +73,9 @@ class ArtistsDownloader:
         else:
             artist_ids = self.extract_all_artists_from_data()
 
-        artists_loop_str = 'Downloading albums of artist'
-        albums_loop_str = 'Downloading tracks of album'
+        artists_loop_str = 'Downloading artists info'
+        albums_loop_str = 'Downloading albums of artist'
+        tracks_loop_str = 'Downloading tracks of album'
 
         # with mp.Pool(1) as pool:
         #     for artist in tqdm(pool.imap_unordered(mp_artist_extractor, list(product([self._sp], artist_ids))),
@@ -97,15 +83,18 @@ class ArtistsDownloader:
         #                        total=len(artist_ids)):
         #         artist.add_to_data(self._data)
 
-        with tqdm(artist_ids, artists_loop_str) as artist_bar:
-            for artist_id in artist_bar:
+        with tqdm(list(enumerate(artist_ids)), artists_loop_str) as artist_bar:
+            for save_interval_cnt, artist_id in artist_bar:
                 if artist_id not in self._data.artists:
                     artist = mp_artist_extractor((self._sp, artist_id))
                     artist_bar.set_description(f'{artists_loop_str} - {artist.name}')
                     artist.add_to_data(self._data)
-
+                if save_interval_cnt % save_interval == 0:
+                    artist_bar.set_description(f'{artists_loop_str} - saving')
+                    dump(self._data, verbose=False)
 
         # albums = self.get_albums_of_artist(artist_id)
+
         # self.add_albums_to_data(albums)
 
         # with tqdm(albums, albums_loop_str, leave=False) as album_bar:
@@ -127,4 +116,4 @@ class ArtistsDownloader:
         # if save_interval_cnt % save_interval == 0:
         #     artist_bar.set_description(f'{artists_loop_str} - saving')
         #     dump(self._data, verbose=False)
-        return self._data
+        return dump(self._data)

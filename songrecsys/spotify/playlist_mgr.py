@@ -42,8 +42,10 @@ class PlaylistMgr:
         with tqdm(tuple(enumerate(self._data.playlists)), text_prefix) as pbar:
             for interval_cnt, pl in pbar:
                 pbar.set_description(f'{text_prefix} - tracks count: {len(self._data.tracks)}')
+                
                 if not self._override and len(self._data.playlists[pl].tracks):
                     continue
+
                 tracks = self._extract_tr_info_from_pl(username, pl)
                 for track in filter(None, tracks):
                     track.add_to_data(self._data, self._override)

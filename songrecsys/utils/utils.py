@@ -27,6 +27,8 @@ class Summary:
             cls._summary_playlists(data, indent)
         if data.tracks:
             cls._summary_tracks(data, indent)
+        if data.artists:
+            cls._summary_artists(data, indent)
 
     @classmethod
     def _summary_playlists(cls, data: Data, indent: int) -> NoReturn:
@@ -35,7 +37,7 @@ class Summary:
         print('Playlists:')
 
         count = len(data.playlists)
-        avg_count_per_pl = [len(data.playlists[pl].tracks) for pl in data.playlists if data.playlists[pl].tracks]
+        avg_count_per_pl = [len(data.playlists[pl].tracks) for pl in tqdm(data.playlists, 'Summary: filtering playlists', leave=False) if data.playlists[pl].tracks]
         avg_count_per_pl = np.average(avg_count_per_pl)
         avg_count_per_pl = np.round(avg_count_per_pl, 1)
 
@@ -49,11 +51,20 @@ class Summary:
         print('Tracks:')
 
         count = len(data.tracks)
-        count_with_lyrics = sum(map(lambda track: int(bool(track.lyrics)), data.tracks.values()))
+        count_with_lyrics = sum(map(lambda track: int(bool(track.lyrics)), tqdm(data.tracks.values(), 'Summary: filtering tracks w/out lyrics', leave=False)))
 
         print(f'{indent}Count:             {count}')
         print(f'{indent}Count with lyrics: {count_with_lyrics}')
 
+    @classmethod
+    def _summary_artists(cls, data:Data, indent:int) -> NoReturn:
+        indent = cls.indent(indent)
+
+        print('Artists:')
+
+        count = len(data.artists)
+
+        print(f'{indent}Count:             {count}')
 
 def override_prompt(default_override: bool, where: Path) -> bool:
     override = True
