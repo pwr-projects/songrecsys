@@ -28,13 +28,8 @@ class ArtistsDownloader:
                 artists.update(set(track.artists_ids))
         return artists
 
-    def _extract_info_from_artist(self, artist_id: str) -> Artist:
-        return self.extra_info_from_artist(self._sp, artist_id)
-
-    @classmethod
-    def extra_info_from_artist(cls, sp: SpotifyWrapper, artist_id: str) -> Artist:
-        artist_info = sp.artist(artist_id)
-        return Artist.from_api(artist_info)
+    def _download_info_about_artist(self, artist_id: str) -> Artist:
+        return Artist.download_info_about_artist(self._sp, artist_id)
 
     def get_albums_of_artist(self, artists_id: str) -> List[Album]:
         all_albums: list = list()
@@ -67,9 +62,10 @@ class ArtistsDownloader:
     def get_all_albums_and_all_tracks(self, save_interval: int = 50, only_playlists: bool = True) -> Data:
         if only_playlists:
             artist_ids: set = set()
-            for pl in self._data.playlists.values():
-                for track in pl.tracks:
+            for pl in tqdm(self._data.playlists.values()):
+                for track in tqdm(pl.tracks):
                     artist_ids.update(set(self._data.tracks[track].artists_ids))
+            artist_ids = set(filter(lambda art: art not in self._data.artists, artist_ids))
         else:
             artist_ids = self.extract_all_artists_from_data()
 
@@ -77,15 +73,15 @@ class ArtistsDownloader:
         albums_loop_str = 'Downloading albums of artist'
         tracks_loop_str = 'Downloading tracks of album'
 
-        # with mp.Pool(1) as pool:
-        #     for artist in tqdm(pool.imap_unordered(mp_artist_extractor, list(product([self._sp], artist_ids))),
+        # with mp.Pool(3) as pool:
+        #     for artist in tqdm(pool.imap_unordered(mp_artist_extractor, product([self._sp], artist_ids)),
         #                        'Downloading artist info',
         #                        total=len(artist_ids)):
         #         artist.add_to_data(self._data)
 
         with tqdm(list(enumerate(artist_ids)), artists_loop_str) as artist_bar:
             for save_interval_cnt, artist_id in artist_bar:
-                if artist_id not in self._data.artists:
+                if artist_id and artist_id not in self._data.artists:
                     artist = mp_artist_extractor((self._sp, artist_id))
                     artist_bar.set_description(f'{artists_loop_str} - {artist.name}')
                     artist.add_to_data(self._data)

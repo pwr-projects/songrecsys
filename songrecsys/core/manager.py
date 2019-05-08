@@ -12,7 +12,7 @@ class Manager:
         self._config = ConfigMgr()
         self._sp = SpotifyWrapper(self.config, usernames)
         self._lp = lyrics_source(self.config)
-        self._pl = PlaylistMgr(self._sp, data, override)
+        self._pl = PlaylistMgr(self._sp, self._config, data, override)
         self._ad = ArtistsDownloader(self._sp, self.config, data)
         self._data = data
 

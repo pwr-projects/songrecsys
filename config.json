@@ -3,5 +3,5 @@
     "spotify_secret": "e583d93e488543cfa8fdb15ec9c0d863",
     "genius_id": "w6GWEGUJLAq1W9iWQ7BLluI6XtZz71lgEQtlhY0qBo396pVgPe9lAx8aKZBdIHtw",
     "genius_secret": "IDROb2fIQ9QDmTQ1voPqvmYxxtkEBlTteQhdVz6PZQDaNKEyj9zYzlJJi9EkvP9iSOWBAaX8-eHSmgk0UNwWiA",
-    "request_interval": 50.0
+    "request_interval": 100.0
 }

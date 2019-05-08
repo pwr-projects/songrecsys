@@ -1,5 +1,5 @@
 import json
-from os import sys
+import sys
 from pathlib import Path
 from typing import NoReturn
 
@@ -24,13 +24,23 @@ class ConfigMgr:
             setattr(self, k, v)
 
     def load(self) -> ConfigBase:
-        try:
-            if len(sys.argv) > 1:
-                return ConfigCLI()
-        except:
-            ...
+        # ipython = False
+        # try:
+        #     from IPython import get_ipython
+        #     cfg = get_ipython().config
+        #     if cfg['IPKernelApp']['parent_appname'] == 'ipython-notebook':
+        #         ipython = True
+        # except:
+        #     ...
+
+        # try:
+        #     if not ipython and len(sys.argv) > 1:
+        #         return ConfigCLI()
+        # except:
+        #     ...
 
         if Path(self._config_path).exists():
+            print(f'Loading config from {self._config_path}')
             return ConfigJSON(self._config_path)
 
         return ConfigInteractive()

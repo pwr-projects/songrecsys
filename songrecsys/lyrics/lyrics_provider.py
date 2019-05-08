@@ -1,5 +1,6 @@
 import multiprocessing as mp
 from abc import ABC, abstractmethod
+from itertools import zip_longest
 from sys import stdout
 from time import sleep
 from typing import Dict
@@ -8,7 +9,7 @@ from songrecsys.config import ConfigBase
 from songrecsys.data import DataFormat, dump
 from songrecsys.multiprocessing import mp_lyrics_downloader
 from songrecsys.schemes import Data
-from songrecsys.utils import tqdm
+from songrecsys.utils import grouper, tqdm
 
 
 class LyricsProvider(ABC):
@@ -23,8 +24,9 @@ class LyricsProvider(ABC):
     def download_lyrics(self, data: Data, save_interval: int = 20) -> Data:
         # interval_cnt = 0
         to_download = tuple(filter(lambda track: not track.lyrics, data.tracks.values()))
-        with mp.Pool(mp.cpu_count()) as pool:
-            pool.starmap(mp_lyrics_downloader, [(track, self.get) for track in to_download])
+        for group in grouper(to_download, save_interval):
+            with mp.Pool(mp.cpu_count()) as pool:
+                pool.starmap(mp_lyrics_downloader, [(track, self.get) for track in group])
 
             # for track in pbar:
             #     pbar.set_description(f'{save_interval - interval_cnt}/{save_interval}')

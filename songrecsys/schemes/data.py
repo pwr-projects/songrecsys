@@ -20,21 +20,30 @@ class BaseDataItem(ABC):
     def check(self) -> bool:
         raise NotImplementedError
 
+class AudioFeatures(BaseDataItem):
+    # def __init__(self, )
+    def add_to_data(self, data, override):
+        pass
+
+    def check(self) -> bool:
+        pass
 
 class Track(BaseDataItem):
 
     def __init__(self,
                  title: str = None,
-                 artists_ids: Set[str] = set(),
+                 artists_ids: Set[str] = None,
                  lyrics: str = None,
+                 audio_features: AudioFeatures = None,
                  id: str = None,
                  use_id: bool = True,
                  **_):
+        self.title: str = preprocess_title(title)
+        self.artists_ids: Set[str] = artists_ids if artists_ids else set()
+        self.lyrics: str = lyrics
+        self.audio_features: AudioFeatures = audio_features
         if use_id:
             self.id = id
-        self.title: str = preprocess_title(title)
-        self.artists_ids: Set[str] = artists_ids
-        self.lyrics: str = lyrics
 
     def add_to_data(self, data, override: bool = True):
         self.checkattr()
@@ -51,7 +60,7 @@ class Track(BaseDataItem):
         artists_ids = list(map(lambda artist_info: artist_info['id'], track_item['artists']))
         title = track_item['name']
         del track_item['artists']
-        return Track(title,  artists_ids, **track_item)
+        return Track(title, artists_ids, **track_item)
 
 
 class Playlist(BaseDataItem):
@@ -60,14 +69,14 @@ class Playlist(BaseDataItem):
                  username: str = None,
                  id: str = None,
                  name: str = None,
-                 tracks: Set[str] = set(),
+                 tracks: Set[str] = None,
                  use_id: bool = True,
                  **_):
         self.username = username
         if use_id:
             self.id: str = id
         self.name: str = name
-        self.tracks: Set[str] = tracks
+        self.tracks: Set[str] = tracks if tracks else set()
 
     def add_to_data(self, data, override: bool = True):
         self.checkattr()
@@ -87,9 +96,9 @@ class Playlist(BaseDataItem):
 
 class Artist(BaseDataItem):
 
-    def __init__(self, name: str, albums_id: List[str] = list(), id: str = None, use_id: bool = True, **_):
+    def __init__(self, name: str, albums_id: Set[str] = None, id: str = None, use_id: bool = True, **_):
         self.name = name
-        self.albums_id = albums_id
+        self.albums_id = albums_id if albums_id else set()
         if use_id:
             self.id = id
 
@@ -106,21 +115,26 @@ class Artist(BaseDataItem):
     def from_api(self, artist_item: dict):
         return Artist(**artist_item)
 
+    @classmethod
+    def download_info_about_artist(cls, sp, artist_id: str):
+        artist_info = sp.artist(artist_id)
+        return Artist.from_api(artist_info)
+
 
 class Album(BaseDataItem):
 
     def __init__(self,
                  id: str = None,
-                 artists_id: List[str] = list(),
-                 tracks: List[str] = list(),
+                 artists_id: Set[str] = None,
+                 tracks: Set[str] = None,
                  name: str = None,
                  use_id: bool = True,
                  **_):
         if use_id:
             self.id = id
-        self.artists_id = artists_id
+        self.artists_id = artists_id if artists_id else set()
         self.name = name
-        self.tracks = tracks
+        self.tracks = tracks if tracks else set()
 
     def add_to_data(self, data, override):
         self.checkattr()
@@ -139,16 +153,11 @@ class Album(BaseDataItem):
 
 class Data:
 
-    def __init__(self,
-                 playlists: dict = defaultdict(Playlist),
-                 tracks: dict = defaultdict(Track),
-                 artists: dict = defaultdict(Artist),
-                 albums: dict = defaultdict(Album),
-                 **_):
-        self.playlists = playlists
-        self.tracks = tracks
-        self.artists = artists
-        self.albums = albums
+    def __init__(self, playlists: dict = None, tracks: dict = None, artists: dict = None, albums: dict = None, **_):
+        self.playlists = playlists if playlists else defaultdict(Playlist)
+        self.tracks = tracks if tracks else defaultdict(Track)
+        self.artists = artists if artists else defaultdict(Artist)
+        self.albums = albums if albums else defaultdict(Album)
 
     @classmethod
     def from_json(cls, data: dict):

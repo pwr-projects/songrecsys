@@ -8,17 +8,16 @@ if __name__ == '__main__':
 
     mgr = Manager(['spotify'], LyricsGenius, data, override=True)
 
-    Summary.show(data, 4)
 
     # mgr.pl.download_data()
     # mgr.lp.download_lyrics(data)
-
-
+    Summary.show(data, 4)
+    
     # mgr.ad.get_all_albums_and_all_tracks(save_interval=50, only_playlists=True)
-    # dump(data, DataFormat.json)
+    # Summary.show(data, 4)
 
 
 
     # nlp = NLP(MAG(MAG.corpus.GOOGLE_NEWS, MAG.weight.heavy, 300))
     pisr = PISR(mgr)
-    pisr.train_w2v_model(epochs=20)
+    pisr.train_w2v_model(epochs=200)

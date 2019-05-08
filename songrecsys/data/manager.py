@@ -7,23 +7,9 @@ from typing import Dict, NoReturn, Tuple
 
 from pandas import DataFrame
 
-from songrecsys.consts import (DEFAULT_PATH_MERGED_DATA, DEFAULT_PATH_PLAYLISTS, DEFAULT_PATH_TRACKS,
-                               DEFAULT_PATH_TRACKS_LYRICS)
+from songrecsys.consts import DEFAULT_PATH_MERGED_DATA
 from songrecsys.schemes import Data, Playlist, Track
 from songrecsys.utils import override_prompt, tqdm
-
-
-def mapper(playlists=None, tracks=None, merged_data=None, lyrics=None):
-    if playlists:
-        playlists = playlists, DEFAULT_PATH_PLAYLISTS, 'playlists', Playlist
-    if tracks:
-        tracks = tracks, DEFAULT_PATH_TRACKS, 'tracks', Track
-    if merged_data:
-        merged_data = merged_data, DEFAULT_PATH_MERGED_DATA, 'merged_data', None
-    if lyrics:
-        lyrics = lyrics, DEFAULT_PATH_TRACKS_LYRICS, 'lyrics', None
-
-    return playlists, tracks, merged_data, lyrics
 
 
 def save_to_pickle(what: object, where: Path, default_override: bool = True, verbose: bool = False) -> object:
@@ -104,10 +90,3 @@ def load(data_format: DataFormat = DataFormat.pickle, verbose: bool = True) -> D
     except Exception as e:
         print(f'FAILED: {e}')
         return Data()
-
-
-def save_to_csv(playlists=None, tracks=None):
-    for data, path, _ in filter(None, mapper(playlists, tracks)):
-        df = (DataFrame.from_dict({k: v.__dict__ for k, v in tqdm(data.items(), 'Converting to pandas DataFrame')},
-                                  orient='index').reset_index())
-        df.to_csv(f'{path}.csv', index=False)
