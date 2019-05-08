@@ -1,4 +1,7 @@
 import re
+from string import punctuation
+
+__all__ = ['preprocess_lyrics', 'preprocess_title']
 
 
 def remove_section_tags(lyrics: str) -> str:
@@ -16,3 +19,10 @@ def preprocess_lyrics(lyrics: str) -> str:
         lyrics = stage(lyrics)
 
     return lyrics
+
+
+def preprocess_title(title: str) -> str:
+    title = re.sub(r"\(.*\)|\[.*\]", '', title)  # (feat.) [extended cut]
+    title = re.sub(r"-.*", '', title)  # - Remastered ...
+    # title = re.sub('|'.join(punctuation), '', title)
+    return title

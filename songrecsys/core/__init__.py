@@ -1,2 +1,2 @@
-from .nlp import *
 from .manager import *
+from .pisr import *

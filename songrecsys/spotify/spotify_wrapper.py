@@ -3,7 +3,7 @@ from typing import List
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from songrecsys.config.base import ConfigBase
+from songrecsys.config import ConfigBase
 
 
 class SpotifyWrapper(Spotify):

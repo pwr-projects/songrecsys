@@ -1,6 +1,6 @@
 from lyricwikia import LyricsNotFound, get_lyrics
 
-from songrecsys.config.base import ConfigBase
+from songrecsys.config import ConfigBase
 from songrecsys.lyrics.lyrics_provider import LyricsProvider
 
 

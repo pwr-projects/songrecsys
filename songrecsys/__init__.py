@@ -5,9 +5,11 @@ from .consts import *
 from .core import *
 from .data import *
 from .lyrics import *
+from .multiprocessing import *
+from .nlp import *
 from .schemes import *
 from .spotify import *
 from .utils import *
 
-for dir_name in (DEFAULT_PATH_DATA_DIR, DEFAULT_PATH_LANG_MODELS_DIR):
+for dir_name in (DEFAULT_PATH_DATA_DIR, DEFAULT_PATH_LANG_MODELS_DIR, DEFAULT_PATH_W2V_MODELS_DIR):
     dir_name.mkdir(exist_ok=True)
