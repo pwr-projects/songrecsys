@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Dict, List
+from typing import Dict, List, Iterable
 
 from songrecsys.nlp.text_preprocessing import preprocess_title
 from songrecsys.schemes import Artist, Playlist, Track
@@ -27,7 +27,7 @@ def mp_extract_artist_song_pair(args) -> List[str]:
     tracks: List[Track] = list(map(tracks.get, playlist.tracks))
     all_tracks: List[str] = list()
     for track in tracks:
-        artists_names: list = list(
+        artists_names: Iterable = list(
             filter(
                 None,
                 map(

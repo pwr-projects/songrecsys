@@ -75,7 +75,7 @@ class PlaylistMgr:
     def _extract_tr_info_from_pl(self, username: str, playlist_id: str, delete_on_fail: bool = False) -> List[Track]:
         try:
             tracks = self._api.user_playlist(username, playlist_id, fields='tracks,next')
-            all_tracks_info: list = list()
+            all_tracks_info = list()
 
             while tracks:
                 all_tracks_info.extend(

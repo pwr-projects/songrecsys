@@ -13,7 +13,7 @@ from songrecsys.utils import tqdm
 class LyricsGenius(Genius, LyricsProvider):
 
     def __init__(self, config: ConfigBase):
-        Genius.__init__(self, config.genius_id)
+        Genius.__init__(self, getattr(config, 'genius_id'))
         LyricsProvider.__init__(self, config)
 
     def get(self, title: str, artist: str) -> str:

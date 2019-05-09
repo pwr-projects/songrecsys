@@ -32,7 +32,7 @@ class ArtistsDownloader:
         return Artist.download_info_about_artist(self._sp, artist_id)
 
     def get_albums_of_artist(self, artists_id: str) -> List[Album]:
-        all_albums: list = list()
+        all_albums = list()
 
         albums = self._sp.artist_albums(artists_id, album_type='album', limit=50)
 
@@ -50,7 +50,7 @@ class ArtistsDownloader:
                 self._data.albums[album.id] = Album(**album.__dict__, use_id=False)
 
     def get_all_tracks_from_album(self, album_id: str) -> List[Track]:
-        all_tracks: list = list()
+        all_tracks = list()
         tracks = self._sp.album_tracks(album_id)
         while tracks:
             all_tracks.extend(tracks['items'])

@@ -3,7 +3,7 @@ from itertools import chain, groupby, product
 from multiprocessing import cpu_count
 from operator import not_
 from pprint import pprint
-from typing import List
+from typing import List, Iterable
 
 from gensim.models import KeyedVectors, Word2Vec
 from gensim.models.callbacks import CallbackAny2Vec
@@ -34,20 +34,11 @@ class PISR:
             with open(DEFAULT_PATH_CORPUS, 'r') as fhd:
                 return split_playlists(map(lambda txt: txt.strip(), fhd.readlines()))
 
-        # with mp.Pool(2) as pool:
-        #     all_tracks = tqdm(pool.imap_unordered(
-        #         mp_extract_artist_song_pair,
-        #         [(pl, self._data.artists, self._data.tracks) for pl in self._data.playlists.values()],
-        #     ),
-        #                       f'Extracting artist-song from playlists',
-        #                       total=len(self._data.playlists))
-        #     corpus = list(chain(*all_tracks))
-
         for playlist in tqdm(self._data.playlists.values(), 'Corpus: playlist'):
             all_tracks: List[str] = list()
             tracks: List[Track] = [self._data.tracks[tr] for tr in playlist.tracks if tr in self._data.tracks]
             for track in tqdm(tracks, 'Corpus: track', leave=False):
-                artists_names: list = [
+                artists_names: Iterable = [
                     self._data.artists[artist_id].name.lower()
                     for artist_id in track.artists_ids
                     if self._data.artists.get(artist_id)
@@ -68,7 +59,7 @@ class PISR:
         learner_info = LearnerInfo(epochs, size)
 
         model = Word2Vec(window=10, size=size, workers=cpu_count())
-        model.build_vocab(corpus, trim_rule=lambda a, b, c: RULE_KEEP)
+        model.build_vocab(corpus, trim_rule=lambda *_: RULE_KEEP)
         model.train(corpus, epochs=epochs, total_words=len(list(chain(*corpus))), callbacks=[learner_info])
 
         model.wv.save(str(path(epochs, size)))

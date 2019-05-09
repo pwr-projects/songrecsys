@@ -1,6 +1,6 @@
 from itertools import zip_longest
 from pathlib import Path
-from typing import NoReturn
+from typing import NoReturn, Union
 
 import numpy as np
 from tqdm.autonotebook import tqdm as tdqm_orig
@@ -19,11 +19,11 @@ class Summary:
         self.show(data, self._indent)
 
     @classmethod
-    def indent(cls, indent: int) -> str:
-        return ' ' * indent
+    def indent(cls, indent: Union[int, str]) -> str:
+        return ' ' * indent if isinstance(indent, int) else indent
 
     @classmethod
-    def show(cls, data: Data, indent: int = DEFAULT_INDENT) -> NoReturn:
+    def show(cls, data: Data, indent: Union[int, str] = DEFAULT_INDENT) -> NoReturn:
         if data.playlists:
             cls._summary_playlists(data, indent)
         if data.tracks:
@@ -32,7 +32,7 @@ class Summary:
             cls._summary_artists(data, indent)
 
     @classmethod
-    def _summary_playlists(cls, data: Data, indent: int) -> NoReturn:
+    def _summary_playlists(cls, data: Data, indent: Union[int, str]) -> NoReturn:
         _indent = cls.indent(indent)
 
         print('Playlists:')
@@ -50,7 +50,7 @@ class Summary:
         print(f'{_indent}Avg track count:   {avg_count_per_pl}')
 
     @classmethod
-    def _summary_tracks(cls, data: Data, indent: int) -> NoReturn:
+    def _summary_tracks(cls, data: Data, indent: Union[int, str]) -> NoReturn:
         _indent = cls.indent(indent)
 
         print('Tracks:')
@@ -64,7 +64,7 @@ class Summary:
         print(f'{_indent}Count with lyrics: {count_with_lyrics}')
 
     @classmethod
-    def _summary_artists(cls, data: Data, indent: int) -> NoReturn:
+    def _summary_artists(cls, data: Data, indent: Union[int, str]) -> NoReturn:
         _indent = cls.indent(indent)
 
         print('Artists:')
@@ -74,9 +74,9 @@ class Summary:
         print(f'{_indent}Count:             {count}')
 
 
-def override_prompt(default_override: bool, where: Path) -> bool:
+def override_prompt(default_override: bool, where: Union[Path, str]) -> bool:
     override = True
-    if not default_override and where.exists():
+    if not default_override and Path(where).exists():
         answer = input(f'{where} exists. Override? [Yy/Nn] ')
         override = answer in 'YyTt'
     return override

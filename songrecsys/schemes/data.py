@@ -1,7 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import List, NoReturn, Set
+from typing import List, NoReturn, Optional, Set
 
 from songrecsys.nlp import preprocess_title
 
@@ -10,7 +10,7 @@ class BaseDataItem(ABC):
 
     def checkattr(self, name: str = 'id'):
         if not hasattr(self, name):
-            raise f'Cannot add to data because there is no `{name}` attribute'
+            raise Exception(f'Cannot add to data because there is no `{name}` attribute')
 
     @abstractmethod
     def add_to_data(self, data, override):
@@ -19,6 +19,7 @@ class BaseDataItem(ABC):
     @abstractmethod
     def check(self) -> bool:
         raise NotImplementedError
+
 
 class AudioFeatures(BaseDataItem):
     # def __init__(self, )
@@ -27,6 +28,7 @@ class AudioFeatures(BaseDataItem):
 
     def check(self) -> bool:
         pass
+
 
 class Track(BaseDataItem):
 
@@ -38,10 +40,10 @@ class Track(BaseDataItem):
                  id: str = None,
                  use_id: bool = True,
                  **_):
-        self.title: str = preprocess_title(title)
-        self.artists_ids: Set[str] = artists_ids if artists_ids else set()
-        self.lyrics: str = lyrics
-        self.audio_features: AudioFeatures = audio_features
+        self.title = preprocess_title(title)
+        self.artists_ids = artists_ids if artists_ids else set()
+        self.lyrics = lyrics
+        self.audio_features = audio_features
         if use_id:
             self.id = id
 

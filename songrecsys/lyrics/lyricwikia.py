@@ -1,3 +1,5 @@
+from typing import Optional
+
 from lyricwikia import LyricsNotFound, get_lyrics
 
 from songrecsys.config import ConfigBase
@@ -9,7 +11,7 @@ class LyricWikia(LyricsProvider):
     def __init__(self, config: ConfigBase):
         LyricsProvider.__init__(self, config)
 
-    def get(self, title: str, artist: str) -> str:
+    def get(self, title: str, artist: str) -> Optional[str]:
         lyrics = None
         try:
             lyrics = get_lyrics(artist, title)
