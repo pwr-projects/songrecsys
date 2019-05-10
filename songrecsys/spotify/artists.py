@@ -32,16 +32,15 @@ class ArtistsDownloader:
         return Artist.download_info_about_artist(self._sp, artist_id)
 
     def get_albums_of_artist(self, artists_id: str) -> List[Album]:
-        all_albums = list()
+        all_albums: List[Album] = []
 
         albums = self._sp.artist_albums(artists_id, album_type='album', limit=50)
 
         while albums:
-            all_albums.extend(albums['items'])
-            sleep(self._config.request_interval)
+            all_albums.extend(list(map(Album.from_api, albums['items'])))
+            sleep(getattr(self._config, 'request_interval', 0.1))
             albums = self._sp.next(albums) if albums['next'] else None
 
-        all_albums = list(map(Album.from_api, all_albums))
         return all_albums
 
     def add_albums_to_data(self, albums: List[Album]) -> NoReturn:
@@ -50,11 +49,11 @@ class ArtistsDownloader:
                 self._data.albums[album.id] = Album(**album.__dict__, use_id=False)
 
     def get_all_tracks_from_album(self, album_id: str) -> List[Track]:
-        all_tracks = list()
+        all_tracks: List[Dict] = []
         tracks = self._sp.album_tracks(album_id)
         while tracks:
             all_tracks.extend(tracks['items'])
-            sleep(self._config.request_interval)
+            sleep(getattr(self._config, 'request_interval', 0.1))
             tracks = self._sp.next(tracks) if tracks['next'] else None
 
         return list(map(Track.from_api, all_tracks))

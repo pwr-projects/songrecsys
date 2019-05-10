@@ -1,3 +1,4 @@
+import subprocess as sp
 from itertools import zip_longest
 from pathlib import Path
 from typing import NoReturn, Union
@@ -90,3 +91,7 @@ def tqdm(*args, **kwargs):
 def grouper(iterable, n: int, fillvalue=None):
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
+
+
+def wc(filename: Union[Path, str]) -> int:
+    return int(sp.check_output(['wc', '-l', filename]).split()[0])

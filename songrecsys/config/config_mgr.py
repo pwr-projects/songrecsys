@@ -7,13 +7,13 @@ from songrecsys.config.base import ConfigBase
 from songrecsys.config.cli import ConfigCLI
 from songrecsys.config.interactive import ConfigInteractive
 from songrecsys.config.saved_json import ConfigJSON
-from songrecsys.consts import DEFAULT_PATH_CONFIG
+from songrecsys.consts import FILEPATH_PATH_CONFIG
 from songrecsys.data import save_to_json
 
 
 class ConfigMgr:
 
-    def __init__(self, config_path: Path = DEFAULT_PATH_CONFIG, *args, **kwargs):
+    def __init__(self, config_path: Path = FILEPATH_PATH_CONFIG, *args, **kwargs):
         self._config_path = config_path
         self._config = self.load()
         self._setattrs()

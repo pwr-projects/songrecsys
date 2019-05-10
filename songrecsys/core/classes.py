@@ -7,7 +7,7 @@ from typing import List
 from gensim.models import Word2Vec
 from gensim.models.callbacks import CallbackAny2Vec
 
-from songrecsys.consts import DEFAULT_PATH_CORPUS, DEFAULT_PATH_W2V_MODEL
+from songrecsys.consts import FILEPATH_W2V_CORPUS, FILEPATH_W2V_MODEL
 from songrecsys.core.manager import Manager
 from songrecsys.data import Data, Track
 from songrecsys.multiprocessing import mp_extract_artist_song_pair
@@ -46,16 +46,16 @@ class PISR:
 
             corpus.extend(list(product([artist_name], tracks_titles)))
 
-        with open(DEFAULT_PATH_CORPUS, 'w') as fhd:
-            print('Saving corpus to', DEFAULT_PATH_CORPUS)
+        with open(FILEPATH_W2V_CORPUS, 'w') as fhd:
+            print('Saving corpus to', FILEPATH_W2V_CORPUS)
             fhd.writelines(corpus)
 
         return corpus
 
     def get_playlist_pairs(self) -> List[str]:
         corpus: List[str] = list()
-        if DEFAULT_PATH_CORPUS.exists():
-            with open(DEFAULT_PATH_CORPUS, 'r') as fhd:
+        if FILEPATH_W2V_CORPUS.exists():
+            with open(FILEPATH_W2V_CORPUS, 'r') as fhd:
                 for line in fhd.readline():
                     corpus.append(line.strip())
             return corpus
@@ -69,8 +69,8 @@ class PISR:
                               total=len(self._data.playlists))
             corpus = list(chain(*all_tracks))
 
-        with open(DEFAULT_PATH_CORPUS, 'w') as fhd:
-            print('Saving corpus to', DEFAULT_PATH_CORPUS)
+        with open(FILEPATH_W2V_CORPUS, 'w') as fhd:
+            print('Saving corpus to', FILEPATH_W2V_CORPUS)
             fhd.writelines(map(lambda text: f'{text}\n', corpus))
 
         return corpus
@@ -87,12 +87,12 @@ class PISR:
             **kwargs,
         )
 
-        model.wv.save(str(DEFAULT_PATH_W2V_MODEL(epochs, size)))
+        model.wv.save(str(FILEPATH_W2V_MODEL(epochs, size)))
         return model
 
     def get_model(self, size: int = 300, epochs: int = 20, **kwargs) -> Word2Vec:
-        if DEFAULT_PATH_W2V_MODEL(epochs, size).exists():
-            return Word2Vec.load(str(DEFAULT_PATH_W2V_MODEL(epochs, size)))
+        if FILEPATH_W2V_MODEL(epochs, size).exists():
+            return Word2Vec.load(str(FILEPATH_W2V_MODEL(epochs, size)))
         return self.train_w2v_model(size, epochs, **kwargs)
 
     def evaluate(self):
@@ -117,7 +117,7 @@ class LearnerInfo(CallbackAny2Vec):
 
     def on_epoch_end(self, model):
         self.epoch_bar.update()
-        model.wv.save(str(DEFAULT_PATH_W2V_MODEL(self.epoch_bar.n, self.size)))
+        model.wv.save(str(FILEPATH_W2V_MODEL(self.epoch_bar.n, self.size)))
 
     def on_batch_end(self, model):
         self.batch_bar.update()

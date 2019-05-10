@@ -1,9 +1,13 @@
 from pathlib import Path
 
-DEFAULT_PATH_CONFIG = Path('config.json')
-DEFAULT_PATH_DATA_DIR = Path('data')
-DEFAULT_PATH_MERGED_DATA = DEFAULT_PATH_DATA_DIR / 'data'
-DEFAULT_PATH_LANG_MODELS_DIR = DEFAULT_PATH_DATA_DIR / 'models'
-DEFAULT_PATH_W2V_MODELS_DIR = DEFAULT_PATH_DATA_DIR / 'w2v'
-DEFAULT_PATH_W2V_MODEL = lambda epochs, size: DEFAULT_PATH_W2V_MODELS_DIR / f'w2v_e{epochs}_s{size}.model'
-DEFAULT_PATH_CORPUS = DEFAULT_PATH_DATA_DIR / 'corpus.txt'
+DIR_DATA_ROOT = Path('data')
+
+DIR_MAGNITUDE_MODELS = DIR_DATA_ROOT / 'models'
+DIR_W2V_MODELS = DIR_DATA_ROOT / 'w2v'
+
+FILEPATH_PATH_CONFIG = Path('config.json')
+FILEPATH_DATA_PICKLED = DIR_DATA_ROOT / 'data'
+FILEPATH_W2V_MODEL = lambda epochs, size: DIR_W2V_MODELS / f'w2v_e{epochs}_s{size}.model'
+FILEPATH_CORPUS = DIR_DATA_ROOT / 'corpus.txt'
+FILEPATH_RAW_DATASET = DIR_DATA_ROOT / 'spotify_dataset.csv'
+FILEPATH_DATASET = DIR_DATA_ROOT / 'dataset.csv'

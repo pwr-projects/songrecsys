@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, NoReturn, Tuple, Union, Optional
 
 from pandas import DataFrame
 
-from songrecsys.consts import DEFAULT_PATH_MERGED_DATA
+from songrecsys.consts import FILEPATH_DATA_PICKLED
 from songrecsys.schemes import Data, Playlist, Track
 from songrecsys.utils import override_prompt, tqdm
 
@@ -50,7 +50,7 @@ def load_from_json(where: Path, convert_to_object: bool = False, verbose: bool =
     if verbose:
         print(f'Loading json from {where}', end='... ')
 
-    object_hook: Optional[Callable[..., Any] = None
+    object_hook: Optional[Callable] = None
 
     if convert_to_object:
         object_hook = lambda json_obj: namedtuple('Data', json_obj.keys())(*json_obj.values())
@@ -72,7 +72,7 @@ class DataFormat:
 def dump(data: Data, data_format: int = DataFormat.pickle, verbose: bool = True, default_override: bool = True) -> Data:
     saver = DataFormat.saver[data_format]
     try:
-        saver(data, DEFAULT_PATH_MERGED_DATA, default_override, verbose)
+        saver(data, FILEPATH_DATA_PICKLED, default_override, verbose)
         if verbose:
             print('OK')
     except Exception as e:
@@ -84,7 +84,7 @@ def dump(data: Data, data_format: int = DataFormat.pickle, verbose: bool = True,
 def load(data_format: int = DataFormat.pickle, verbose: bool = True) -> Data:
     loader = DataFormat.loader[data_format]
     try:
-        data = loader(DEFAULT_PATH_MERGED_DATA, verbose)
+        data = loader(FILEPATH_DATA_PICKLED, verbose)
         if data_format == DataFormat.json:
             data = Data.from_json(data)
         print('OK')
