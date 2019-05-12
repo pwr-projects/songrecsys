@@ -1,9 +1,11 @@
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import List, NoReturn, Optional, Set
+from typing import *
 
 from songrecsys.nlp import preprocess_title
+
+__all__ = ['AudioFeatures', 'Data', 'Artist', 'Album', 'Playlist', 'Track']
 
 
 class BaseDataItem(ABC):
@@ -22,12 +24,70 @@ class BaseDataItem(ABC):
 
 
 class AudioFeatures(BaseDataItem):
-    # def __init__(self, )
-    def add_to_data(self, data, override):
-        pass
+
+    def __init__(self,
+                 id: str,
+                 danceability: float,
+                 energy: float,
+                 key: int,
+                 loudness: float,
+                 mode: int,
+                 speechiness: float,
+                 acousticness: float,
+                 instrumentalness: float,
+                 liveness: float,
+                 valence: float,
+                 tempo: float,
+                 duration_ms: int,
+                 time_signature: int,
+                 use_id: bool = True,
+                 **_):
+        self.danceability = danceability
+        self.energy = energy
+        self.key = key
+        self.loudness = loudness
+        self.mode = mode
+        self.speechiness = speechiness
+        self.acousticness = acousticness
+        self.instrumentalness = instrumentalness
+        self.liveness = liveness
+        self.valence = valence
+        self.tempo = tempo
+        self.duration_ms = duration_ms
+        self.time_signature = time_signature
+        if use_id:
+            self.id = id
+
+    def add_to_data(self, data, override: bool = True):
+        self.checkattr()
+        if override or not data.tracks[self.id].audio_features:
+            data.tracks[self.id].audio_features = AudioFeatures(**self.__dict__, use_id=False)
+
+    @classmethod
+    def from_api(cls, audio_features_item: dict):
+        return AudioFeatures(**audio_features_item)
 
     def check(self) -> bool:
-        pass
+        return False
+
+    def to_list(self) -> Iterable[Union[float, int]]:
+        return [
+            getattr(self, atr) for atr in [
+                'danceability',
+                'energy',
+                'key',
+                'loudness',
+                'mode',
+                'speechiness',
+                'acousticness',
+                'instrumentalness',
+                'liveness',
+                'valence',
+                'tempo',
+                'duration_ms',
+                'time_signature',
+            ]
+        ]
 
 
 class Track(BaseDataItem):

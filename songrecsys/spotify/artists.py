@@ -7,10 +7,13 @@ from typing import Dict, List, NoReturn, Set
 
 from songrecsys.config import ConfigBase
 from songrecsys.data import dump
-from songrecsys.multiprocessing.artists import mp_artist_extractor
-from songrecsys.schemes import Album, Artist, Data, Track
-from songrecsys.spotify import PlaylistMgr, SpotifyWrapper
-from songrecsys.utils import tqdm
+from songrecsys.multiprocessing import mp_artist_extractor
+from songrecsys.schemes import *
+from songrecsys.spotify.playlist_mgr import PlaylistMgr
+from songrecsys.spotify.spotify_wrapper import SpotifyWrapper
+from songrecsys.misc import tqdm
+
+__all__ = ['ArtistsDownloader']
 
 
 class ArtistsDownloader:
@@ -37,7 +40,7 @@ class ArtistsDownloader:
         albums = self._sp.artist_albums(artists_id, album_type='album', limit=50)
 
         while albums:
-            all_albums.extend(list(map(Album.from_api, albums['items'])))
+            all_albums.extend([Album.from_api, albums['items']])
             sleep(getattr(self._config, 'request_interval', 0.1))
             albums = self._sp.next(albums) if albums['next'] else None
 

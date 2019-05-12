@@ -1,8 +1,10 @@
 from time import sleep
-from typing import Dict, List, Iterable
+from typing import *
 
-from songrecsys.nlp.text_preprocessing import preprocess_title
-from songrecsys.schemes import Artist, Playlist, Track
+from songrecsys.nlp import *
+from songrecsys.schemes import *
+
+__all__ = ['mp_artist_extractor', 'mp_extract_artist_song_pair']
 
 
 def mp_artist_extractor(args) -> Artist:

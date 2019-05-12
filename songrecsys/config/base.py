@@ -1,3 +1,6 @@
+__all__ = ['ConfigBase']
+
+
 class ConfigBase:
 
     def __init__(self, **kwargs):

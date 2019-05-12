@@ -2,8 +2,10 @@ from typing import Optional
 
 from lyricwikia import LyricsNotFound, get_lyrics
 
-from songrecsys.config import ConfigBase
-from songrecsys.lyrics.lyrics_provider import LyricsProvider
+from songrecsys.config import *
+from songrecsys.lyrics.lyrics_provider import *
+
+__all__ = ['LyricWikia']
 
 
 class LyricWikia(LyricsProvider):

@@ -1,20 +1,23 @@
 from sys import stdout
 from time import sleep
 
-from songrecsys.schemes import Track
-from songrecsys.nlp import preprocess_title
+from songrecsys.nlp import *
+from songrecsys.schemes import *
 
-def mp_lyrics_downloader(id: str, track: Track, artists,  getter):
+__all__ = ['mp_lyrics_downloader']
+
+
+def mp_lyrics_downloader(id: str, track: Track, artists, getter):
     what = f'{artists} - {track.title}'
-    # stdout.write(f'Downloading {what}\n')
 
     stdout.flush()
     got = False
     while not got:
         try:
-            track.lyrics = getter(preprocess_title(track.title), ' '.join(artists))
+            track.lyrics = getter(preprocess_title(track.title), artists[0] if len(artists) > 0 else '')
             got = True
-        except:
+        except Exception as e:
+            print(e)
             sleep(2)
     if track.lyrics:
         stdout.write(f'Downloaded  {what}\n')

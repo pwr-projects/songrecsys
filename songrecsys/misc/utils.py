@@ -1,12 +1,15 @@
 import subprocess as sp
 from itertools import zip_longest
 from pathlib import Path
-from typing import NoReturn, Union
+from sys import stdout
+from typing import Any, Iterable, NoReturn, Union
 
 import numpy as np
 from tqdm.autonotebook import tqdm as tdqm_orig
 
-from songrecsys.schemes import Data
+from songrecsys.schemes import *
+
+__all__ = ['Summary', 'tqdm', 'override_prompt', 'grouper', 'wc', 'desc_task_begin', 'desc_task_end']
 
 
 class Summary:
@@ -47,8 +50,8 @@ class Summary:
         avg_count_per_pl = np.average(avg_count_per_pl)
         avg_count_per_pl = np.round(avg_count_per_pl, 1)
 
-        print(f'{_indent}Count:             {count}')
-        print(f'{_indent}Avg track count:   {avg_count_per_pl}')
+        print(f'{_indent}Count:                  {count}')
+        print(f'{_indent}Avg track count:        {avg_count_per_pl}')
 
     @classmethod
     def _summary_tracks(cls, data: Data, indent: Union[int, str]) -> NoReturn:
@@ -57,12 +60,18 @@ class Summary:
         print('Tracks:')
 
         count = len(data.tracks)
-        count_with_lyrics = sum(
-            map(lambda track: int(bool(track.lyrics)),
-                tqdm(data.tracks.values(), 'Summary: filtering tracks w/out lyrics', leave=False)))
+        count_with_lyrics = sum([
+            int(bool(track.lyrics))
+            for track in tqdm(data.tracks.values(), 'Summary: filtering tracks w/out lyrics', leave=False)
+        ])
 
-        print(f'{_indent}Count:             {count}')
-        print(f'{_indent}Count with lyrics: {count_with_lyrics}')
+        count_with_audio_features = sum([
+            int(bool(track.audio_features))
+            for track in tqdm(data.tracks.values(), 'Summary: filtering tracks w/out audio features', leave=False) if hasattr(track, 'audio_features')
+        ])
+        print(f'{_indent}Count:                  {count}')
+        print(f'{_indent}Count with lyrics:      {count_with_lyrics}')
+        print(f'{_indent}Count with audio feat.: {count_with_audio_features}')
 
     @classmethod
     def _summary_artists(cls, data: Data, indent: Union[int, str]) -> NoReturn:
@@ -72,7 +81,7 @@ class Summary:
 
         count = len(data.artists)
 
-        print(f'{_indent}Count:             {count}')
+        print(f'{_indent}Count:                  {count}')
 
 
 def override_prompt(default_override: bool, where: Union[Path, str]) -> bool:
@@ -88,10 +97,19 @@ def tqdm(*args, **kwargs):
     # return tdqm_orig(*args, **kwargs)
 
 
-def grouper(iterable, n: int, fillvalue=None):
+def grouper(iterable: Iterable, n: int, fillvalue=None) -> Iterable[Any]:
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
 
 
 def wc(filename: Union[Path, str]) -> int:
     return int(sp.check_output(['wc', '-l', filename]).split()[0])
+
+
+def desc_task_begin(text: str) -> NoReturn:
+    print(text, end="... ")
+    stdout.flush()
+
+
+def desc_task_end(text: str = 'DONE') -> NoReturn:
+    print(text)

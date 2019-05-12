@@ -1,4 +1,6 @@
-from .base import ConfigBase
+from songrecsys.config.base import *
+
+__all__ = ['ConfigInteractive']
 
 
 class ConfigInteractive(ConfigBase):

@@ -2,6 +2,8 @@ from enum import Enum
 from pathlib import Path
 from typing import NewType
 
+__all__ = ['ModelPath', 'MAG']
+
 ModelPath = NewType('Model', str)
 
 

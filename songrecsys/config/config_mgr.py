@@ -3,12 +3,14 @@ import sys
 from pathlib import Path
 from typing import NoReturn
 
-from songrecsys.config.base import ConfigBase
-from songrecsys.config.cli import ConfigCLI
-from songrecsys.config.interactive import ConfigInteractive
-from songrecsys.config.saved_json import ConfigJSON
-from songrecsys.consts import FILEPATH_PATH_CONFIG
-from songrecsys.data import save_to_json
+from songrecsys.config.base import *
+from songrecsys.config.cli import *
+from songrecsys.config.interactive import *
+from songrecsys.config.saved_json import *
+from songrecsys.consts import *
+from songrecsys.data import *
+
+__all__ = ['ConfigMgr']
 
 
 class ConfigMgr:

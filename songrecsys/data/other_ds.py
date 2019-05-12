@@ -6,7 +6,7 @@ from typing import AnyStr, Iterable, NoReturn, Optional, Union
 import pandas as pd
 
 from songrecsys.consts import *
-from songrecsys.utils import tqdm, wc
+from songrecsys.misc import tqdm, wc
 
 
 class OtherDS:
@@ -17,6 +17,7 @@ class OtherDS:
     def load(self) -> Optional[pd.DataFrame]:
         if not FILEPATH_DATASET.exists():
             return None
+            
         self._data = []
         with open(FILEPATH_DATASET) as fhd:
             reader = csv.reader(fhd, delimiter=';', quotechar='|', quoting=csv.QUOTE_ALL)

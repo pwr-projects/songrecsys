@@ -3,13 +3,15 @@ from abc import ABC, abstractmethod
 from itertools import zip_longest
 from sys import stdout
 from time import sleep
-from typing import Dict
+from typing import *
 
-from songrecsys.config import ConfigBase
-from songrecsys.data import DataFormat, dump
-from songrecsys.multiprocessing import mp_lyrics_downloader
-from songrecsys.schemes import Data
-from songrecsys.utils import grouper, tqdm
+from songrecsys.config import *
+from songrecsys.data import *
+from songrecsys.misc import *
+from songrecsys.multiprocessing import *
+from songrecsys.schemes import *
+
+__all__ = ['LyricsProvider']
 
 
 class LyricsProvider(ABC):
@@ -18,7 +20,7 @@ class LyricsProvider(ABC):
         self.verbose = getattr(config, 'verbose', False)
 
     @abstractmethod
-    def get(self, title, artist):
+    def get(self, title, artist) -> Optional[str]:
         ...
 
     def download_lyrics(self, data: Data, save_interval: int = 50) -> Data:

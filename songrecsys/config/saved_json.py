@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
-from songrecsys.data import load_from_json
-from songrecsys.config.base import ConfigBase
+
+from songrecsys.config.base import *
+from songrecsys.data import *
+
+__all__ = ['ConfigJSON']
 
 
 class ConfigJSON(ConfigBase):

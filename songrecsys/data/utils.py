@@ -3,13 +3,15 @@ import pickle
 from collections import namedtuple
 from enum import auto
 from pathlib import Path
-from typing import Any, Callable, Dict, NoReturn, Tuple, Union, Optional
+from typing import Any, Callable, Dict, NoReturn, Optional, Tuple, Union
 
 from pandas import DataFrame
 
-from songrecsys.consts import FILEPATH_DATA_PICKLED
-from songrecsys.schemes import Data, Playlist, Track
-from songrecsys.utils import override_prompt, tqdm
+from songrecsys.consts import *
+from songrecsys.schemes import *
+from songrecsys.misc import *
+
+__all__ = ['save_to_json', 'load_from_json', 'save_to_pickle', 'load_from_pickle', 'DataFormat', 'dump', 'load']
 
 
 def save_to_pickle(what: object, where: Union[Path, str], default_override: bool = True,
@@ -27,7 +29,7 @@ def load_from_pickle(where: Path, verbose: bool = False):
         print(f'Loading pickle from {where}', end='... ')
 
     with open(where, 'rb') as fhd:
-        return pickle.load(fhd)
+        return pickle.load(fhd, fix_imports=True)
 
 
 def save_to_json(what: object, where: Union[Path, str], default_override: bool = True, verbose: bool = False) -> object:

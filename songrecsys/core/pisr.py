@@ -3,18 +3,21 @@ from itertools import chain, groupby, product
 from multiprocessing import cpu_count
 from operator import not_
 from pprint import pprint
-from typing import List, Iterable
+from typing import Iterable, List
 
 from gensim.models import KeyedVectors, Word2Vec
 from gensim.models.callbacks import CallbackAny2Vec
 from gensim.utils import RULE_KEEP
 
 from songrecsys.consts import *
-from songrecsys.core.manager import Manager
-from songrecsys.data import Data, Track
-from songrecsys.multiprocessing import mp_extract_artist_song_pair
-from songrecsys.nlp import preprocess_title
-from songrecsys.utils import tqdm
+from songrecsys.core.manager import *
+from songrecsys.data import *
+from songrecsys.multiprocessing import *
+from songrecsys.nlp import *
+from songrecsys.schemes import *
+from songrecsys.misc import *
+
+__all__ = ['PISR']
 
 
 class PISR:
@@ -29,9 +32,9 @@ class PISR:
 
         split_playlists = lambda tracks: [list(group) for k, group in groupby(tracks, bool) if k]
 
-        if FILEPATH_W2V_CORPUS.exists():
-            print(f'Loading corpus from {FILEPATH_W2V_CORPUS}')
-            with open(FILEPATH_W2V_CORPUS, 'r') as fhd:
+        if FILEPATH_PISR_CORPUS.exists():
+            print(f'Loading corpus from {FILEPATH_PISR_CORPUS}')
+            with open(FILEPATH_PISR_CORPUS, 'r') as fhd:
                 return split_playlists(map(lambda txt: txt.strip(), fhd.readlines()))
 
         for playlist in tqdm(self._data.playlists.values(), 'Corpus: playlist'):
@@ -48,13 +51,14 @@ class PISR:
             all_tracks.append(' ')
             corpus.append(all_tracks)
 
-        with open(FILEPATH_W2V_CORPUS, 'w') as fhd:
-            print('Saving corpus to', FILEPATH_W2V_CORPUS)
+        with open(FILEPATH_PISR_CORPUS, 'w') as fhd:
+            print('Saving corpus to', FILEPATH_PISR_CORPUS)
             fhd.writelines(map(lambda text: f'{text}\n', chain(*corpus)))
 
         return split_playlists(chain(*corpus))
 
-    def train_w2v_model(self, corpus=None, path=FILEPATH_W2V_MODEL, size: int = 300, epochs: int = 20, **kwargs) -> Word2Vec:
+    def train_w2v_model(self, corpus=None, path=FILEPATH_PISR_W2V_MODEL, size: int = 300, epochs: int = 20,
+                        **kwargs) -> Word2Vec:
         corpus = corpus if corpus else self.get_playlist_pairs()
         learner_info = LearnerInfo(epochs, size)
 
@@ -66,8 +70,8 @@ class PISR:
         return model
 
     def get_model(self, size: int = 300, epochs: int = 20, **kwargs) -> Word2Vec:
-        if FILEPATH_W2V_MODEL(epochs, size).exists():
-            return KeyedVectors.load(str(FILEPATH_W2V_MODEL(epochs, size)))
+        if FILEPATH_PISR_W2V_MODEL(epochs, size).exists():
+            return KeyedVectors.load(str(FILEPATH_PISR_W2V_MODEL(epochs, size)))
         return self.train_w2v_model(size, epochs, **kwargs)
 
     def evaluate(self):
@@ -86,7 +90,7 @@ class LearnerInfo(CallbackAny2Vec):
 
     def on_epoch_end(self, model):
         self.epoch_bar.update()
-        model.wv.save(str(FILEPATH_W2V_MODEL(self.epoch_bar.n, self.size)))
+        model.wv.save(str(FILEPATH_PISR_W2V_MODEL(self.epoch_bar.n, self.size)))
 
     def on_batch_end(self, model):
         self.batch_bar.update()

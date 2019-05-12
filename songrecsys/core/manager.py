@@ -1,14 +1,20 @@
 from typing import List
 
-from songrecsys.config import ConfigBase, ConfigMgr
-from songrecsys.lyrics import LyricsProvider
-from songrecsys.schemes import Data
-from songrecsys.spotify import ArtistsDownloader, PlaylistMgr, SpotifyWrapper
+from songrecsys.config import *
+from songrecsys.lyrics import *
+from songrecsys.schemes import *
+from songrecsys.spotify import *
+
+__all__ = ['Manager']
 
 
 class Manager:
 
-    def __init__(self, usernames: List[str], lyrics_source: LyricsProvider, data: Data = Data(), override: bool = True):
+    def __init__(self,
+                 usernames: List[str],
+                 lyrics_source = LyricsGenius,
+                 data: Data = Data(),
+                 override: bool = True):
         self._config = ConfigMgr()
         self._sp = SpotifyWrapper(self.config, usernames)
         self._lp = lyrics_source(self.config)
@@ -17,7 +23,7 @@ class Manager:
         self._data = data
 
     @property
-    def config(self) -> ConfigBase:
+    def config(self):
         return self._config
 
     @property
