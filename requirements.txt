@@ -4,6 +4,7 @@ spotipy
 tqdm
 lyricsgenius
 bs4
+seaborn
 ####################
 ###  PYMAGNITUDE ###
 pymagnitude

@@ -12,36 +12,36 @@ from gensim.utils import RULE_KEEP
 from songrecsys.consts import *
 from songrecsys.core.manager import *
 from songrecsys.data import *
+from songrecsys.misc import *
 from songrecsys.multiprocessing import *
 from songrecsys.nlp import *
 from songrecsys.schemes import *
-from songrecsys.misc import *
 
 __all__ = ['PISR']
 
 
 class PISR:
 
-    def __init__(self, manager: Manager):
-        self._mgr: Manager = manager
-        self._data: Data = self._mgr.data
-        self._model: Word2Vec = None
+    def __init__(self, manager):
+        self._mgr = manager
+        self._data = self._mgr.data
+        self._model = None
 
-    def get_playlist_pairs(self) -> List[List[str]]:
-        corpus: List[List[str]] = list()
+    def get_playlist_pairs(self):
+        corpus = list()
 
         split_playlists = lambda tracks: [list(group) for k, group in groupby(tracks, bool) if k]
 
         if FILEPATH_PISR_CORPUS.exists():
             print(f'Loading corpus from {FILEPATH_PISR_CORPUS}')
             with open(FILEPATH_PISR_CORPUS, 'r') as fhd:
-                return split_playlists(map(lambda txt: txt.strip(), fhd.readlines()))
+                return split_playlists([txt.strip() for txt in fhd.readlines()])
 
         for playlist in tqdm(self._data.playlists.values(), 'Corpus: playlist'):
-            all_tracks: List[str] = list()
-            tracks: List[Track] = [self._data.tracks[tr] for tr in playlist.tracks if tr in self._data.tracks]
+            all_tracks = list()
+            tracks = [self._data.tracks[tr] for tr in playlist.tracks if tr in self._data.tracks]
             for track in tqdm(tracks, 'Corpus: track', leave=False):
-                artists_names: Iterable = [
+                artists_names = [
                     self._data.artists[artist_id].name.lower()
                     for artist_id in track.artists_ids
                     if self._data.artists.get(artist_id)
@@ -53,12 +53,11 @@ class PISR:
 
         with open(FILEPATH_PISR_CORPUS, 'w') as fhd:
             print('Saving corpus to', FILEPATH_PISR_CORPUS)
-            fhd.writelines(map(lambda text: f'{text}\n', chain(*corpus)))
+            fhd.writelines([f'{text}\n' for text in chain(*corpus)])
 
         return split_playlists(chain(*corpus))
 
-    def train_w2v_model(self, corpus=None, path=FILEPATH_PISR_W2V_MODEL, size: int = 300, epochs: int = 20,
-                        **kwargs) -> Word2Vec:
+    def train_w2v_model(self, corpus=None, path=FILEPATH_PISR_W2V_MODEL, size=300, epochs=20, **kwargs):
         corpus = corpus if corpus else self.get_playlist_pairs()
         learner_info = LearnerInfo(epochs, size)
 
@@ -69,7 +68,7 @@ class PISR:
         model.wv.save(str(path(epochs, size)))
         return model
 
-    def get_model(self, size: int = 300, epochs: int = 20, **kwargs) -> Word2Vec:
+    def get_model(self, size=300, epochs=20, **kwargs):
         if FILEPATH_PISR_W2V_MODEL(epochs, size).exists():
             return KeyedVectors.load(str(FILEPATH_PISR_W2V_MODEL(epochs, size)))
         return self.train_w2v_model(size, epochs, **kwargs)
@@ -86,7 +85,7 @@ class LearnerInfo(CallbackAny2Vec):
     def __init__(self, epochs, size):
         self.epoch_bar = tqdm(desc="Epochs", total=epochs)
         self.batch_bar = tqdm(desc='Batch')
-        self.size: int = size
+        self.size = size
 
     def on_epoch_end(self, model):
         self.epoch_bar.update()

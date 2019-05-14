@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import NoReturn
+from typing import *
 
 from songrecsys.config.base import *
 from songrecsys.config.cli import *
@@ -10,16 +10,20 @@ from songrecsys.config.saved_json import *
 from songrecsys.consts import *
 from songrecsys.data import *
 
-__all__ = ['ConfigMgr']
+__all__ = ['ConfigMgr', 'ConfigBase']
 
 
 class ConfigMgr:
 
-    def __init__(self, config_path: Path = FILEPATH_PATH_CONFIG, *args, **kwargs):
+    def __init__(self, config_path: Union[Path, str] = FILEPATH_PATH_CONFIG, *args, **kwargs):
         self._config_path = config_path
-        self._config = self.load()
+        self._config: ConfigBase = self.load()
         self._setattrs()
         self.dump()
+
+    @property
+    def config(self) -> Dict[str, Any]:
+        return self._config.base_dict
 
     def _setattrs(self) -> NoReturn:
         for k, v in self._config.base_dict.items():
@@ -47,7 +51,7 @@ class ConfigMgr:
 
         return ConfigInteractive()
 
-    def dump(self) -> object:
+    def dump(self) -> ConfigMgr:
         conf = self._config.base_dict.copy()
         conf['request_interval'] = conf['request_interval'] * 1000
         save_to_json(conf, self._config_path)

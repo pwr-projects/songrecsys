@@ -1,47 +1,40 @@
+from __future__ import annotations
+
 import re
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from typing import *
 
-from songrecsys.nlp import preprocess_title
+import pandas as pd
+
+from songrecsys.nlp import *
+from songrecsys.spotify import *
 
 __all__ = ['AudioFeatures', 'Data', 'Artist', 'Album', 'Playlist', 'Track']
 
 
-class BaseDataItem(ABC):
+class BaseDataItem:
 
     def checkattr(self, name: str = 'id'):
         if not hasattr(self, name):
             raise Exception(f'Cannot add to data because there is no `{name}` attribute')
 
     @abstractmethod
-    def add_to_data(self, data, override):
+    def add_to_data(self, data: Data) -> Data:
         raise NotImplementedError
 
     @abstractmethod
     def check(self) -> bool:
         raise NotImplementedError
 
+    def use_id(self, kwargs: Dict[str, Any]) -> bool:
+        return kwargs.get('use_id', True)
+
 
 class AudioFeatures(BaseDataItem):
 
-    def __init__(self,
-                 id: str,
-                 danceability: float,
-                 energy: float,
-                 key: int,
-                 loudness: float,
-                 mode: int,
-                 speechiness: float,
-                 acousticness: float,
-                 instrumentalness: float,
-                 liveness: float,
-                 valence: float,
-                 tempo: float,
-                 duration_ms: int,
-                 time_signature: int,
-                 use_id: bool = True,
-                 **_):
+    def __init__(self, id: Optional[str], danceability: float, energy: float, key: int, loudness: float, mode: int,
+                 speechiness: float, acousticness: float, instrumentalness: float, liveness: float, valence: float,
+                 tempo: float, duration_ms: int, time_signature: int, **kwargs):
         self.danceability = danceability
         self.energy = energy
         self.key = key
@@ -55,71 +48,80 @@ class AudioFeatures(BaseDataItem):
         self.tempo = tempo
         self.duration_ms = duration_ms
         self.time_signature = time_signature
-        if use_id:
+        if self.use_id(kwargs):
             self.id = id
 
-    def add_to_data(self, data, override: bool = True):
+    def add_to_data(self, data: Data) -> Data:
         self.checkattr()
-        if override or not data.tracks[self.id].audio_features:
-            data.tracks[self.id].audio_features = AudioFeatures(**self.__dict__, use_id=False)
+        if not data.tracks[getattr(self, 'id')].audio_features:
+            data.tracks[getattr(self, 'id')].audio_features = AudioFeatures(**self.__dict__, use_id=False)
+        return data
 
     @classmethod
-    def from_api(cls, audio_features_item: dict):
+    def from_api(cls, audio_features_item: Dict[str, Any]) -> AudioFeatures:
         return AudioFeatures(**audio_features_item)
 
     def check(self) -> bool:
         return False
 
-    def to_list(self) -> Iterable[Union[float, int]]:
+    @staticmethod
+    def attr_names() -> Iterable[str]:
         return [
-            getattr(self, atr) for atr in [
-                'danceability',
-                'energy',
-                'key',
-                'loudness',
-                'mode',
-                'speechiness',
-                'acousticness',
-                'instrumentalness',
-                'liveness',
-                'valence',
-                'tempo',
-                'duration_ms',
-                'time_signature',
-            ]
+            'danceability',
+            'energy',
+            'key',
+            'loudness',
+            'mode',
+            'speechiness',
+            'acousticness',
+            'instrumentalness',
+            'liveness',
+            'valence',
+            'tempo',
+            'duration_ms',
+            'time_signature',
         ]
+
+    @property
+    def toList(self) -> Iterable[Any]:
+        return [getattr(self, atr) for atr in self.attr_names()]
+
+    @classmethod
+    def to_df(cls, data: Data) -> pd.DataFrame:
+        _data = [
+            [track_id, *track.audio_features.toList] for track_id, track in data.tracks.items() if track.audio_features
+        ]
+        return pd.DataFrame.from_records(_data, columns=['idx', *AudioFeatures.attr_names()])
 
 
 class Track(BaseDataItem):
 
     def __init__(self,
-                 title: str = None,
-                 artists_ids: Set[str] = None,
-                 lyrics: str = None,
-                 audio_features: AudioFeatures = None,
-                 id: str = None,
-                 use_id: bool = True,
-                 **_):
+                 title: str,
+                 artists_ids: Set[str],
+                 lyrics: Optional[str] = None,
+                 audio_features: Optional[AudioFeatures] = None,
+                 id: Optional[str] = None,
+                 **kwargs):
         self.title = preprocess_title(title)
         self.artists_ids = artists_ids if artists_ids else set()
         self.lyrics = lyrics
         self.audio_features = audio_features
-        if use_id:
+        if self.use_id(kwargs):
             self.id = id
 
-    def add_to_data(self, data, override: bool = True):
+    def add_to_data(self, data: Data) -> Data:
         self.checkattr()
-        if override or self.id not in data.tracks:
-            data.tracks[self.id] = Track(**self.__dict__, use_id=False)
+        if self.id not in data.tracks:
+            data.tracks[getattr(self, 'id')] = Track(**self.__dict__, use_id=False)
         return data
 
     def check(self) -> bool:
-        return all(map(lambda attr: hasattr(self, attr),
-                       ['title', 'lyrics', 'artists_ids'])) and not hasattr(self, 'id')
+        return all(hasattr(self, attr) for attr in ['title', 'lyrics', 'artists_ids']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(cls, track_item: dict):
-        artists_ids = list(map(lambda artist_info: artist_info['id'], track_item['artists']))
+    def from_api(cls, track_item: Dict[str, Any]) -> Track:
+        artists_ids = set(artist_info['id'] for artist_info in track_item['artists'])
         title = track_item['name']
         del track_item['artists']
         return Track(title, artists_ids, **track_item)
@@ -127,30 +129,24 @@ class Track(BaseDataItem):
 
 class Playlist(BaseDataItem):
 
-    def __init__(self,
-                 username: str = None,
-                 id: str = None,
-                 name: str = None,
-                 tracks: Set[str] = None,
-                 use_id: bool = True,
-                 **_):
+    def __init__(self, username: str, id: str, name: str, tracks: Optional[Set[str]] = None, **kwargs):
         self.username = username
-        if use_id:
-            self.id: str = id
-        self.name: str = name
-        self.tracks: Set[str] = tracks if tracks else set()
+        self.tracks = tracks if tracks else set()
+        self.name = name
+        if self.use_id(kwargs):
+            self.id = id
 
-    def add_to_data(self, data, override: bool = True):
+    def add_to_data(self, data: Data) -> Data:
         self.checkattr()
-        if override or self.id not in data.playlists:
+        if self.id not in data.playlists:
             data.playlists[self.id] = Playlist(**self.__dict__, use_id=False)
         return data
 
     def check(self) -> bool:
-        return all(map(lambda attr: hasattr(self, attr), ['username', 'name', 'tracks'])) and not hasattr(self, 'id')
+        return all(hasattr(self, attr) for attr in ['username', 'name', 'tracks']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, playlist_item: dict):
+    def from_api(self, playlist_item: Dict[str, Any]) -> Playlist:
         username = playlist_item['owner']['id']
         del playlist_item['tracks']
         return Playlist(username, **playlist_item)
@@ -158,27 +154,27 @@ class Playlist(BaseDataItem):
 
 class Artist(BaseDataItem):
 
-    def __init__(self, name: str, albums_id: Set[str] = None, id: str = None, use_id: bool = True, **_):
+    def __init__(self, name: str, albums_id: Optional[Set[str]] = None, id: Optional[str] = None, **kwargs):
         self.name = name
         self.albums_id = albums_id if albums_id else set()
-        if use_id:
+        if self.use_id(kwargs):
             self.id = id
 
-    def add_to_data(self, data, override: bool = True):
+    def add_to_data(self, data: Data) -> Data:
         self.checkattr()
-        if override or self.id not in data.artists:
-            data.artists[self.id] = Artist(**self.__dict__, use_id=False)
+        if self.id not in data.artists:
+            data.artists[getattr(self, 'id')] = Artist(**self.__dict__, use_id=False)
         return data
 
     def check(self) -> bool:
-        return all(map(lambda attr: hasattr(self, attr), ['name', 'albums_id'])) and not hasattr(self, 'id')
+        return all(hasattr(self, attr) for attr in ['name', 'albums_id']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, artist_item: dict):
+    def from_api(self, artist_item: Dict[str, Any]) -> Artist:
         return Artist(**artist_item)
 
     @classmethod
-    def download_info_about_artist(cls, sp, artist_id: str):
+    def download_info_about_artist(cls, sp: SpotifyWrapper, artist_id: str) -> Artist:
         artist_info = sp.artist(artist_id)
         return Artist.from_api(artist_info)
 
@@ -186,42 +182,46 @@ class Artist(BaseDataItem):
 class Album(BaseDataItem):
 
     def __init__(self,
-                 id: str = None,
-                 artists_id: Set[str] = None,
-                 tracks: Set[str] = None,
-                 name: str = None,
-                 use_id: bool = True,
-                 **_):
-        if use_id:
-            self.id = id
+                 name: str,
+                 artists_id: Optional[Set[str]] = None,
+                 tracks: Optional[Set[str]] = None,
+                 id: Optional[str] = None,
+                 **kwargs):
         self.artists_id = artists_id if artists_id else set()
         self.name = name
         self.tracks = tracks if tracks else set()
+        if self.use_id(kwargs):
+            self.id = id
 
-    def add_to_data(self, data, override):
+    def add_to_data(self, data: Data) -> Data:
         self.checkattr()
-        if override or self.id not in data.albums:
-            data.albums[self.id] = Album(**self.__dict__, use_id=False)
+        if self.id not in data.albums:
+            data.albums[getattr(self, 'id')] = Album(**self.__dict__, use_id=False)
         return data
 
     def check(self) -> bool:
-        return all(map(lambda attr: hasattr(self, attr), ['artists_id', 'name'])) and not hasattr(self, 'id')
+        return all(hasattr(self, attr) for attr in ['artists_id', 'name']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, album_item: dict):
-        artists_id = set(map(lambda artist: artist['id'], album_item['artists']))
+    def from_api(self, album_item: Dict[str, Any]) -> Album:
+        artists_id = set(artist['id'] for artist in album_item['artists'])
         return Album(artists_id=artists_id, **album_item)
 
 
 class Data:
 
-    def __init__(self, playlists: dict = None, tracks: dict = None, artists: dict = None, albums: dict = None, **_):
-        self.playlists = playlists if playlists else defaultdict(Playlist)
-        self.tracks = tracks if tracks else defaultdict(Track)
-        self.artists = artists if artists else defaultdict(Artist)
-        self.albums = albums if albums else defaultdict(Album)
+    def __init__(self,
+                 playlists: Optional[Dict[str, Playlist]] = None,
+                 tracks: Optional[Dict[str, Track]] = None,
+                 artists: Optional[Dict[str, Artist]] = None,
+                 albums: Optional[Dict[str, Album]] = None,
+                 **_):
+        self.playlists = playlists if playlists else dict()
+        self.tracks = tracks if tracks else dict()
+        self.artists = artists if artists else dict()
+        self.albums = albums if albums else dict()
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: Dict[str, Any]) -> Data:
         _data = {k: data[k] for k in ['playlists', 'tracks', 'artists', 'albums'] if data.get(k)}
         return Data(**_data)

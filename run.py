@@ -4,10 +4,10 @@ from pprint import pprint
 from songrecsys import *
 
 if __name__ == '__main__':
-    data: Data = load(DataFormat.pickle)
+    data = load(DataFormat.pickle)
     Summary.show(data, 4)
 
-    mgr = Manager(['spotify'], LyricsGenius, data, override=True)
+    mgr = Manager(['spotify'], LyricsGenius, data)
 
     # # GET NEW DATA
     # mgr.pl.download_data()

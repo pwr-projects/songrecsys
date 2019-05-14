@@ -1,20 +1,28 @@
 from typing import *
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from sklearn.cluster import KMeans
 
 from songrecsys.schemes import *
 
 __all__ = ['Clustering']
 
-class Clustering: 
+
+class Clustering:
 
     def __init__(self, data: Data):
         self._data = data
+        self._plot_data = AudioFeatures.to_df(self._data)
 
-    def simple_preprocessing(self) -> Iterable[Iterable[Union[float, int]]]:
-        return [track.audio_features.to_list() for track in self._data.tracks.values() if track.audio_features]
+    def fit(self, **kwargs) -> KMeans:
+        kmeans = KMeans(random_state=0, **kwargs).fit(self._plot_data)
+        return kmeans
 
-    def fit(self, preprocessing: Callable):
-        data = preprocessing(self)
-        kmeans = KMeans(n_clusters=2, random_state=0).fit(data)
-        print(kmeans.labels_)
+    def scatter_matrix(self) -> plt.figure:
+        plot = sns.pairplot(self._plot_data, plot_kws=dict(s=20))
+        plt.title('Scatter matrix')
+        plot.savefig("output.png", dpi=600)
+        return plot

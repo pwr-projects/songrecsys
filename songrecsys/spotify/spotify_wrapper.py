@@ -1,4 +1,4 @@
-from typing import List
+from typing import *
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -8,9 +8,10 @@ from songrecsys.misc import desc_task_begin, desc_task_end
 
 __all__ = ['SpotifyWrapper']
 
+
 class SpotifyWrapper(Spotify):
 
-    def __init__(self, config: ConfigBase, usernames: List[str], *args, **kwargs):
+    def __init__(self, config: ConfigBase, usernames: Iterable[str], *args, **kwargs):
         '''Spotipy wrapper allowing to perform operations on playlists and so on
 
         Arguments:

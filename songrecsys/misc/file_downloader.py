@@ -8,7 +8,7 @@ from songrecsys.misc.utils import tqdm
 __all__ = ['download_file']
 
 
-def download_file(url: Text, filename: Optional[Union[Path, str]] = None, verbose: bool = False) -> NoReturn:
+def download_file(url, filename=None, verbose=False):
     if not filename:
         local_filename = Path('.') / url.split('/')[-1]
     else:

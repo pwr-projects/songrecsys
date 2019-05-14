@@ -2,6 +2,7 @@
 import re
 import sys
 from typing import *
+from urllib.parse import quote_plus
 
 import requests
 from bs4 import BeautifulSoup
@@ -9,24 +10,16 @@ from bs4 import BeautifulSoup
 from songrecsys.config import *
 from songrecsys.lyrics.lyrics_provider import *
 
-try:
-    from urllib.parse import quote_plus
-except ImportError:
-    from urllib import quote_plus
-
 __all__ = ['WebLyrics']
 
 
 class WebLyrics(LyricsProvider):
 
     def __init__(self, config: ConfigBase):
-        self.verbose = getattr(config, 'verbose', False)
+        self.verbose: bool = getattr(config, 'verbose', False)
 
-    def get(self, title, artist) -> Optional[str]:
-
-        search_name = f'{artist} {title} genius lyrics'
-        name = quote_plus(search_name)
-        url = f'http://www.google.com/search?q={name}'
+    def get(self, title: str, artist: str) -> Optional[str]:
+        url = 'http://www.google.com/search?q=' + quote_plus(f'{artist} {title} genius lyrics')
         result = requests.get(url).text
         link_start = result.find('https://genius.com')
         if link_start == -1:
@@ -37,7 +30,7 @@ class WebLyrics(LyricsProvider):
         link = re.sub(r"&.*", '', link)
         link_correct = self._check_link_genius(artist, title, link)
         if not link_correct:
-            print(f'Link not correct:            {artist} - {title}')
+            print(f'Link not correct: {artist} - {title}')
             return None
 
         lyrics_html = requests.get(link).text
@@ -50,8 +43,8 @@ class WebLyrics(LyricsProvider):
         return lyrics[2:]
 
     @classmethod
-    def _check_link_genius(cls, artist, title, link):
-        songinfo = "%s %s" % (artist, title)
+    def _check_link_genius(cls, artist: str, title: str, link: str) -> bool:
+        songinfo = f'{artist} {title}'
         songinfo = songinfo.lower()
         songinfo = re.sub(r"ö", "o", songinfo)
         songinfo = re.sub(r"ä", "a", songinfo)

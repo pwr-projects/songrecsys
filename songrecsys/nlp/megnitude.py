@@ -8,7 +8,7 @@ __all__ = ['NLP']
 
 class NLP(Magnitude):
 
-    def __init__(self, model_path: ModelPath, use_stream: bool = False):
+    def __init__(self, model_path, use_stream=False):
         self._model_path = model_path
         model = MagnitudeUtils.download_model(str(self._model_path.concatenated_info),
                                               download_dir=str(DIR_MAGNITUDE_MODELS),

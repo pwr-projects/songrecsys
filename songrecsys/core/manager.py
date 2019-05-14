@@ -1,4 +1,4 @@
-from typing import List
+from typing import *
 
 from songrecsys.config import *
 from songrecsys.lyrics import *
@@ -10,21 +10,17 @@ __all__ = ['Manager']
 
 class Manager:
 
-    def __init__(self,
-                 usernames: List[str],
-                 lyrics_source = LyricsGenius,
-                 data: Data = Data(),
-                 override: bool = True):
+    def __init__(self, usernames: Iterable[str], lyrics_source: AnyLyrics = LyricsGenius, data: Data = Data()):
         self._config = ConfigMgr()
-        self._sp = SpotifyWrapper(self.config, usernames)
-        self._lp = lyrics_source(self.config)
-        self._pl = PlaylistMgr(self._sp, self._config, data, override)
-        self._ad = ArtistsDownloader(self._sp, self.config, data)
+        self._sp = SpotifyWrapper(self._config._config, usernames)
+        self._lp = lyrics_source(self._config._config)
+        self._pl = PlaylistMgr(self._sp, self._config._config, data)
+        self._ad = ArtistsDownloader(self._sp, self._config._config, data)
         self._data = data
 
     @property
-    def config(self):
-        return self._config
+    def config(self) -> Dict[str, Any]:
+        return self._config.config
 
     @property
     def data(self) -> Data:

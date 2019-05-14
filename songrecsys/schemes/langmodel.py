@@ -4,7 +4,7 @@ from typing import NewType
 
 __all__ = ['ModelPath', 'MAG']
 
-ModelPath = NewType('Model', str)
+ModelPath = NewType('ModelPath', str)
 
 
 class MAG:
@@ -31,29 +31,29 @@ class MAG:
         WIKI_NEWS_SUBWORD = lambda _: (MAG.algorithm.ft, 'wiki-news-300d-1M-subword', [])
         COMMON_CRAWL_FT = lambda _: (MAG.algorithm.ft, 'crawl-300d-2M', [])
 
-    def __init__(self, corpus: corpus, weight: weight, dimension: int = None):
-        self.corpus = corpus
-        self.weight = weight
-        self.dimension = dimension
+    def __init__(self, corpus: corpus, weight: weight, dimension=None):
+        self._corpus = corpus
+        self._weight = weight
+        self._dimension = dimension
 
     @property
-    def concatenated_info(self) -> str:
-        return MAG.concat_info(self.corpus, self.weight, self.dimension)
+    def concatenated_info(self):
+        return MAG.concat_info(self._corpus, self._weight, self.dimension)
 
     @staticmethod
-    def concat_info(corpus: corpus, weight: weight, dimensions: int = None) -> str:
+    def concat_info(corpus, weight, dimensions=None):
         algo, name, _ = corpus(dimensions)
         return '/'.join([algo, weight.value, name])
 
     @staticmethod
-    def get(corpus: corpus, weight: weight, dimensions: int = None) -> ModelPath:
-        algo, name, poss_dims = corpus(dimensions)
+    def get(corpus_, weight_: weight, dimensions=None):
+        algo, name, poss_dims = corpus_(dimensions)
 
         if poss_dims:
             poss_dims_str = ', '.join(map(str, poss_dims))
-            assert (dimensions in poss_dims, f'{dimensions} not available for {name}. Possible are: {poss_dims_str}')
+            assert dimensions in poss_dims, f'{dimensions} not available for {name}. Possible are: {poss_dims_str}'
 
         return Path() / algo / (name + '.magnitude')
 
-    def __call__(self) -> ModelPath:
+    def __call__(self):
         return MAG.get(self.corpus, self.weight, self.dimension)

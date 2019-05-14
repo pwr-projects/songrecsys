@@ -6,22 +6,24 @@ from time import sleep
 from typing import *
 
 from songrecsys.config import *
-from songrecsys.data import *
+from songrecsys.data_manager import *
 from songrecsys.misc import *
 from songrecsys.multiprocessing import *
 from songrecsys.schemes import *
 
-__all__ = ['LyricsProvider']
+__all__ = ['LyricsProvider', 'AnyLyrics']
+
+AnyLyrics = TypeVar('AnyLyrics', bound='LyricsProvider')
 
 
 class LyricsProvider(ABC):
 
     def __init__(self, config: ConfigBase):
-        self.verbose = getattr(config, 'verbose', False)
+        self.verbose: bool = getattr(config, 'verbose', False)
 
     @abstractmethod
-    def get(self, title, artist) -> Optional[str]:
-        ...
+    def get(self, title: str, artist: str) -> Optional[str]:
+        raise NotImplementedError
 
     def download_lyrics(self, data: Data, save_interval: int = 50) -> Data:
         # interval_cnt = 0
@@ -35,22 +37,6 @@ class LyricsProvider(ABC):
                 for track_id, track in tracks:
                     data.tracks[track_id] = track
             after = len(tuple(filter(lambda track: not track.lyrics, data.tracks.values())))
-            # for track in pbar:
-            #     pbar.set_description(f'{save_interval - interval_cnt}/{save_interval}')
-            #     got = False
-            #     while not got:
-            #         try:
-            #             track.lyrics = self.get(track.title.replace('(', '').replace(')', ''), ' '.join(track.artists))
-            #             got = True
-            #             interval_cnt += 1
-            #         except:
-            #             pbar.set_description('Trying again')
-            #             sleep(2)
-
-            #     if interval_cnt == save_interval:
-            #         pbar.set_description('Saving')
-            #         dump(data, verbose=False)
-            #         interval_cnt = 0
             print('Downloaded', before - after, 'lyrics.', after, 'to finish.')
             dump(data)
         return data

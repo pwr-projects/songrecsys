@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 from pathlib import Path
 
 
-def requirements(reqs_path: Path = Path('requirements.txt')) -> List[str]:
+def requirements(reqs_path=Path('requirements.txt')):
     with open(reqs_path, 'r') as fhd:
         return fhd.readlines()
 

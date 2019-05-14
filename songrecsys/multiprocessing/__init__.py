@@ -1,2 +1,2 @@
-from .lyrics import *
-from .artists import *
+from .artists_mp import *
+from .lyrics_mp import *

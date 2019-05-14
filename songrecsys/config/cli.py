@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 from songrecsys.config.base import *
-
+from typing import *
 __all__ = ['ConfigCLI']
 
 
@@ -16,8 +16,4 @@ class ConfigCLI(ConfigBase):
         parser.add_argument('--request_interval', type=float, help='Interval between API requests', default=0.1)
 
         args = parser.parse_args()
-        super().__init__(**args.__dict__)
-
-    @property
-    def base_dict(self) -> dict:
-        return super().base_dict
+        super().__init__(**(args.__dict__))

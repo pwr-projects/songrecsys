@@ -1,2 +1,2 @@
-from .langmodel import *
 from .data import *
+from .langmodel import *
