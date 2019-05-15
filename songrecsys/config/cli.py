@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
+from typing import *
 
 from songrecsys.config.base import *
-from typing import *
+
 __all__ = ['ConfigCLI']
 
 

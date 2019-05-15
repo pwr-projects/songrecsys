@@ -7,7 +7,6 @@ from typing import *
 import pandas as pd
 
 from songrecsys.nlp import *
-from songrecsys.spotify import *
 
 __all__ = ['AudioFeatures', 'Data', 'Artist', 'Album', 'Playlist', 'Track']
 
@@ -58,7 +57,7 @@ class AudioFeatures(BaseDataItem):
         return data
 
     @classmethod
-    def from_api(cls, audio_features_item: Dict[str, Any]) -> AudioFeatures:
+    def from_api(cls, audio_features_item: Dict[str, Any]) -> 'AudioFeatures':
         return AudioFeatures(**audio_features_item)
 
     def check(self) -> bool:
@@ -120,7 +119,7 @@ class Track(BaseDataItem):
         return all(hasattr(self, attr) for attr in ['title', 'lyrics', 'artists_ids']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(cls, track_item: Dict[str, Any]) -> Track:
+    def from_api(cls, track_item: Dict[str, Any]) -> 'Track':
         artists_ids = set(artist_info['id'] for artist_info in track_item['artists'])
         title = track_item['name']
         del track_item['artists']
@@ -146,7 +145,7 @@ class Playlist(BaseDataItem):
         return all(hasattr(self, attr) for attr in ['username', 'name', 'tracks']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, playlist_item: Dict[str, Any]) -> Playlist:
+    def from_api(self, playlist_item: Dict[str, Any]) -> 'Playlist':
         username = playlist_item['owner']['id']
         del playlist_item['tracks']
         return Playlist(username, **playlist_item)
@@ -170,11 +169,11 @@ class Artist(BaseDataItem):
         return all(hasattr(self, attr) for attr in ['name', 'albums_id']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, artist_item: Dict[str, Any]) -> Artist:
+    def from_api(self, artist_item: Dict[str, Any]) -> 'Artist':
         return Artist(**artist_item)
 
     @classmethod
-    def download_info_about_artist(cls, sp: SpotifyWrapper, artist_id: str) -> Artist:
+    def download_info_about_artist(cls, sp, artist_id: str) -> 'Artist':
         artist_info = sp.artist(artist_id)
         return Artist.from_api(artist_info)
 
@@ -203,7 +202,7 @@ class Album(BaseDataItem):
         return all(hasattr(self, attr) for attr in ['artists_id', 'name']) and not hasattr(self, 'id')
 
     @classmethod
-    def from_api(self, album_item: Dict[str, Any]) -> Album:
+    def from_api(self, album_item: Dict[str, Any]) -> 'Album':
         artists_id = set(artist['id'] for artist in album_item['artists'])
         return Album(artists_id=artists_id, **album_item)
 
@@ -222,6 +221,6 @@ class Data:
         self.albums = albums if albums else dict()
 
     @classmethod
-    def from_json(cls, data: Dict[str, Any]) -> Data:
+    def from_json(cls, data: Dict[str, Any]) -> 'Data':
         _data = {k: data[k] for k in ['playlists', 'tracks', 'artists', 'albums'] if data.get(k)}
         return Data(**_data)

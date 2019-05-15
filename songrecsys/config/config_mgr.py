@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
@@ -8,7 +10,7 @@ from songrecsys.config.cli import *
 from songrecsys.config.interactive import *
 from songrecsys.config.saved_json import *
 from songrecsys.consts import *
-from songrecsys.data import *
+from songrecsys.data_manager import *
 
 __all__ = ['ConfigMgr', 'ConfigBase']
 

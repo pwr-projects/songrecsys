@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import *
 
 from songrecsys.config.base import *
-from songrecsys.data import *
+from songrecsys.data_manager import *
 
 __all__ = ['ConfigJSON']
 

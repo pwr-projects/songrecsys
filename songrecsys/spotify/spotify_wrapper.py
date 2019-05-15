@@ -3,8 +3,8 @@ from typing import *
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from songrecsys.config import ConfigBase
-from songrecsys.misc import desc_task_begin, desc_task_end
+from songrecsys.config import *
+from songrecsys.misc import *
 
 __all__ = ['SpotifyWrapper']
 
