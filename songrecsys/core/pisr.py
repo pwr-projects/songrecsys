@@ -11,7 +11,7 @@ from gensim.utils import RULE_KEEP
 
 from songrecsys.consts import *
 from songrecsys.core.manager import *
-from songrecsys.data import *
+from songrecsys.data_manager import *
 from songrecsys.misc import *
 from songrecsys.multiprocessing import *
 from songrecsys.nlp import *
@@ -68,28 +68,8 @@ class PISR:
         model.wv.save(str(path(epochs, size)))
         return model
 
-    def get_model(self, size=300, epochs=20, **kwargs):
+    def get_model(self, size=300, epochs=20, **kwargs) -> KeyedVectors:
         if FILEPATH_PISR_W2V_MODEL(epochs, size).exists():
             return KeyedVectors.load(str(FILEPATH_PISR_W2V_MODEL(epochs, size)))
         return self.train_w2v_model(size, epochs, **kwargs)
 
-    def evaluate(self):
-        if self._model:
-            corpus = self.get_playlist_pairs()
-            score = self._model.score(corpus[:1000000], total_sentences=1000000)
-            print(score)
-
-
-class LearnerInfo(CallbackAny2Vec):
-
-    def __init__(self, epochs, size):
-        self.epoch_bar = tqdm(desc="Epochs", total=epochs)
-        self.batch_bar = tqdm(desc='Batch')
-        self.size = size
-
-    def on_epoch_end(self, model):
-        self.epoch_bar.update()
-        model.wv.save(str(FILEPATH_PISR_W2V_MODEL(self.epoch_bar.n, self.size)))
-
-    def on_batch_end(self, model):
-        self.batch_bar.update()

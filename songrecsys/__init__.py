@@ -1,5 +1,3 @@
-import os
-
 from .config import *
 from .consts import *
 from .core import *

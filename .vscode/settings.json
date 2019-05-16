@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": ".env/bin/python",
+    "python.pythonPath": "/home/suchygrzech/.conda/envs/datascience/bin/python",
     "python.linting.pylintEnabled": false,
     "cSpell.words": [
         "oauth",

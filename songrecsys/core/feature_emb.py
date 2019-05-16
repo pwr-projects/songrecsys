@@ -1,34 +1,34 @@
 from typing import *
 
-from gensim.models import KeyedVectors, Word2Vec
-from gensim.models.callbacks import CallbackAny2Vec
-from keras.layers import Embedding, Input, Reshape
+from keras import losses, metrics, optimizers
+from keras.layers import (LSTM, Activation, Concatenate, Dense, Dropout, Embedding, Input)
 from keras.models import Model
 
 from songrecsys.consts import *
 from songrecsys.misc import *
-from songrecsys.schemes import *
+from songrecsys.schemes import Data
 
-__all__ = ['SongEmbedding']
+__all__ = ['AudioEmb']
 
 
-class SongEmbedding:
+class AudioEmb:
 
-    def __init__(self, data: Data, emb_size: int = 15):
+    def __init__(self, data: Data, emb_size: int = 300):
 
         self.emb_size = emb_size
         self.data = data
         self.model = self.init_model()
 
     def init_model(self) -> Model:
-
-        audio = Input(name='audio', shape=[1])
-
-        audio_emb = Embedding(name='audio embedding', input_dim=len(self.data.tracks), output_dim=self.emb_size)(audio)
-
-        merged = Reshape(target_sape=[1])(audio_emb)
-
-        model = Model(inputs=audio, outputs=merged)
-        model.compile(optimizer='Adam', loss='mse')
+        emb_input = len(self.data.tracks)
+        emb = Embedding(emb_input, self.emb_size, input_length=70, trainable=False)
+        lstm = LSTM(self.emb_size, dropout=0.3, recurrent_dropout=0.3)(emb)
+        audio_features = Input((1,))
+        cont = Concatenate()(lstm, audio_features)
+        drop = Dropout(0.6)(cont)
+        dens = Dense(1)(drop)
+        act_func = Activation('sigmoid')(dens)
+        model = Model([emb, audio_features], act_func)
+        model.compile(optimizers.Adam, losses.mean_squared_error, [metrics.acc])
 
         return model

@@ -7,7 +7,7 @@ DIRNAME_MAGNITUDE_MODELS = 'models'
 
 FILENAME_DATA_PICKLED = 'data'
 FILENAME_PISR_CORPUS = 'corpus.txt'
-FILENAME_W2V_MODEL = lambda epochs, size: f'w2v_e{epochs}_s{size}.model'
+FILENAME_W2V_MODEL = lambda epochs, size, window: f'w2v_e{epochs}_s{size}_w{window}.model'
 FILENAME_CONFIG = 'config.json'
 
 DIR_DATA_ROOT = Path('data')
